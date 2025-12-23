@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TextureAtlas imagePath="Rat_ghost.png" width="1024" height="512">
+    <sprite n="1.png" x="152" y="347" w="166" h="158" oX="11" oY="49" oW="256" oH="256"/>
+    <sprite n="2.png" x="318" y="2" w="160" h="156" oX="17" oY="51" oW="256" oH="256"/>
+    <sprite n="3.png" x="139" y="2" w="175" h="156" oX="11" oY="51" oW="256" oH="256"/>
+    <sprite n="4.png" x="294" y="162" w="167" h="156" oX="10" oY="51" oW="256" oH="256"/>
+    <sprite n="5.png" x="2" y="180" w="122" h="166" oX="52" oY="41" oW="256" oH="256"/>
+    <sprite n="6.png" x="2" y="2" w="133" h="174" oX="51" oY="33" oW="256" oH="256"/>
+    <sprite n="7.png" x="152" y="509" w="1" h="1" oX="0" oY="0" oW="256" oH="256"/>
+    <sprite n="8.png" x="128" y="180" w="162" h="163" oX="12" oY="41" oW="256" oH="256"/>
+    <sprite n="9.png" x="322" y="322" w="149" h="155" oX="29" oY="48" oW="256" oH="256"/>
+    <sprite n="10.png" x="482" y="2" w="177" h="149" oX="2" oY="52" oW="256" oH="256"/>
+    <sprite n="11.png" x="465" y="162" w="166" h="154" oX="13" oY="50" oW="256" oH="256"/>
+    <sprite n="12.png" x="2" y="350" w="146" h="159" oX="30" oY="44" oW="256" oH="256"/>
+    <sprite n="13.png" x="475" y="320" w="179" h="147" oX="2" oY="57" oW="256" oH="256"/>
+    <sprite n="14.png" x="152" y="509" w="1" h="1" oX="0" oY="0" oW="256" oH="256"/>
+    <sprite n="15.png" x="152" y="509" w="1" h="1" oX="0" oY="0" oW="256" oH="256"/>
+    <sprite n="16.png" x="152" y="509" w="1" h="1" oX="0" oY="0" oW="256" oH="256"/>
+</TextureAtlas>

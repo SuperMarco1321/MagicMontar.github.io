@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TextureAtlas imagePath="character_body_bat.png" width="512" height="512">
+    <sprite n="character_body_bat-0-0.png" x="0" y="0" w="251" h="226" pX="0.5" pY="0.5" oX="64" oY="100" oW="256" oH="512"/>
+    <sprite n="character_body_bat-0-1.png" x="251" y="0" w="247" h="103" pX="0.5" pY="0.5" oX="71" oY="210" oW="256" oH="512"/>
+    <sprite n="character_body_bat-0-2.png" x="251" y="103" w="203" h="227" pX="0.5" pY="0.5" oX="73" oY="179" oW="256" oH="512"/>
+    <sprite n="character_body_bat-0-3.png" x="0" y="330" w="100" h="148" pX="0.5" pY="0.5" oX="30" oY="213" oW="256" oH="512"/>
+</TextureAtlas>

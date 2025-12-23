@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TextureAtlas imagePath="banker-body.png" width="256" height="256">
+    <sprite n="banker-body-0-0.png" x="0" y="0" w="170" h="230" pX="0.5" pY="0.5" oX="22" oY="23" oW="272" oH="263"/>
+</TextureAtlas>

@@ -1,0 +1,1511 @@
+{
+    sprite = axe_0.png;
+    equippedAngle = 30.0;
+    equipOffsetX = -32;
+    equipOffsetY = -12;
+}
+
+{
+    sprite = axe_1.png;
+    equippedAngle = 30.0;
+    equipOffsetX = -32;
+    equipOffsetY = -12;
+}
+
+{
+    sprite = axe_0.png;
+    equippedAngle = 30.0;
+    equipOffsetX = -32;
+    equipOffsetY = -12;
+}
+
+{
+    sprite = axe_spider.png;
+    equippedAngle = 30.0;
+    equipOffsetX = -42;
+    equipOffsetY = -18;
+}
+
+{
+    sprite = axe_snake.png;
+    equippedAngle = 30.0;
+    equipOffsetX = -42;
+    equipOffsetY = -18;
+}
+
+{
+    sprite = axe_cthulhu.png;
+    equippedAngle = 30.0;
+    equipOffsetX = -42;
+    equipOffsetY = -18;
+}
+
+{
+    sprite = axe_all_seeing.png;
+    equippedAngle = 30.0;
+    equipOffsetX = -42;
+    equipOffsetY = -18;
+}
+
+{
+    sprite = axe_2.png;
+    equippedAngle = 35.0;
+    equipOffsetX = -34;
+    equipOffsetY = -14;
+}
+
+{
+    sprite = axe_steel.png;
+    equippedAngle = 30.0;
+    equipOffsetX = -32;
+    equipOffsetY = -12;
+}
+
+{
+    sprite = sword_dummy.png;
+    equippedAngle = 28.0;
+    equipOffsetX = -26;
+    equipOffsetY = 2;
+}
+
+{
+    sprite = axe_bone.png;
+    equippedAngle = 30.0;
+    equipOffsetX = -42;
+    equipOffsetY = -18;
+}
+
+{
+    sprite = axe_poison.png;
+    equippedAngle = 30.0;
+    equipOffsetX = -42;
+    equipOffsetY = -18;
+}
+
+{
+    sprite = axe_justice.png;
+    equippedAngle = 30.0;
+    equipOffsetX = -32;
+    equipOffsetY = -12;
+}
+
+{
+    sprite = axe_epic_fire_small.png;
+    equippedAngle = 30.0;
+    equipOffsetX = -38;
+    equipOffsetY = -4;
+}
+
+{
+    sprite = axe_epic_fire_small.png;
+    equippedAngle = 30.0;
+    equipOffsetX = -38;
+    equipOffsetY = -4;
+}
+
+{
+    sprite = axe_treasure.png;
+    equippedAngle = 30.0;
+    equipOffsetX = -32;
+    equipOffsetY = -12;
+}
+
+{
+    sprite = axe_water.png;
+    equippedAngle = 25.0;
+    equipOffsetX = -34;
+    equipOffsetY = 2;
+}
+
+{
+    sprite = axe_survivor.png;
+    equippedAngle = 30.0;
+    equipOffsetX = -32;
+    equipOffsetY = -12;
+}
+
+{
+    sprite = axe_frost.png;
+    equippedAngle = 30.0;
+    equipOffsetX = -42;
+    equipOffsetY = -18;
+}
+
+{
+    sprite = axe_air.png;
+    equippedAngle = 25.0;
+    equipOffsetX = -34;
+    equipOffsetY = 2;
+}
+
+{
+    sprite = axe_easter.png;
+    equippedAngle = 30.0;
+    equipOffsetX = -42;
+    equipOffsetY = -18;
+}
+
+{
+    sprite = dagger_5.png;
+    equippedAngle = 34.0;
+    equipOffsetX = -36;
+    equipOffsetY = -14;
+}
+
+{
+    sprite = dagger_snake_black_mamba.png;
+    equippedAngle = 30.0;
+    equipOffsetX = -32;
+    equipOffsetY = -12;
+}
+
+{
+    sprite = dagger_6.png;
+    equippedAngle = 20.0;
+    equipOffsetX = -32;
+    equipOffsetY = -12;
+}
+
+{
+    sprite = dagger_8.png;
+    equippedAngle = 34.0;
+    equipOffsetX = -34;
+    equipOffsetY = -12;
+}
+
+{
+    sprite = dagger_9.png;
+    equippedAngle = 34.0;
+    equipOffsetX = -36;
+    equipOffsetY = -14;
+}
+
+{
+    sprite = dagger_snake.png;
+    equippedAngle = 30.0;
+    equipOffsetX = -48;
+    equipOffsetY = -16;
+}
+
+{
+    sprite = dagger_8.png;
+    equippedAngle = 34.0;
+    equipOffsetX = -34;
+    equipOffsetY = -12;
+}
+
+{
+    sprite = sword_dummy.png;
+    equippedAngle = 28.0;
+    equipOffsetX = -26;
+    equipOffsetY = 2;
+}
+
+{
+    sprite = dagger_steel.png;
+    equippedAngle = 25.0;
+    equipOffsetX = -32;
+    equipOffsetY = -12;
+}
+
+{
+    sprite = sword_dummy.png;
+    equippedAngle = 28.0;
+    equipOffsetX = -26;
+    equipOffsetY = 2;
+}
+
+{
+    sprite = dagger_bone.png;
+    equippedAngle = 34.0;
+    equipOffsetX = -34;
+    equipOffsetY = -12;
+}
+
+{
+    sprite = dagger_dual_bone.png;
+    equippedAngle = 30.0;
+    equipOffsetX = -32;
+    equipOffsetY = -12;
+}
+
+{
+    sprite = dagger_dual_poison.png;
+    equippedAngle = 30.0;
+    equipOffsetX = -32;
+    equipOffsetY = -12;
+}
+
+{
+    sprite = dagger_poison.png;
+    equippedAngle = 30.0;
+    equipOffsetX = -48;
+    equipOffsetY = -16;
+}
+
+{
+    sprite = dagger_cthulhu.png;
+    equippedAngle = 34.0;
+    equipOffsetX = -34;
+    equipOffsetY = -12;
+}
+
+{
+    sprite = dagger_rogue.png;
+    equippedAngle = 34.0;
+    equipOffsetX = -34;
+    equipOffsetY = -12;
+}
+
+{
+    sprite = dagger_treasure_dual.png;
+    equippedAngle = 30.0;
+    equipOffsetX = -32;
+    equipOffsetY = -12;
+}
+
+{
+    sprite = dagger_treasure.png;
+    equippedAngle = 25.0;
+    equipOffsetX = -32;
+    equipOffsetY = -12;
+}
+
+{
+    sprite = dagger_frost.png;
+    equippedAngle = 30.0;
+    equipOffsetX = -48;
+    equipOffsetY = -16;
+}
+
+{
+    sprite = dagger_survivor.png;
+    equippedAngle = 25.0;
+    equipOffsetX = -32;
+    equipOffsetY = -12;
+}
+
+{
+    sprite = dagger_survival_dual.png;
+    equippedAngle = 30.0;
+    equipOffsetX = -32;
+    equipOffsetY = -12;
+}
+
+{
+    sprite = dagger_water_dual.png;
+    equippedAngle = 30.0;
+    equipOffsetX = -32;
+    equipOffsetY = -12;
+}
+
+{
+    sprite = dagger_0_plus.png;
+    equippedAngle = 25.0;
+    equipOffsetX = -32;
+    equipOffsetY = -12;
+}
+
+{
+    sprite = dagger_spider.png;
+    equippedAngle = 34.0;
+    equipOffsetX = -34;
+    equipOffsetY = -12;
+}
+
+{
+    sprite = dagger_dart.png;
+    equippedAngle = 34.0;
+    equipOffsetX = -36;
+    equipOffsetY = -14;
+}
+
+{
+    sprite = easter-dagger-mini.png;
+    equippedAngle = 30.0;
+    equipOffsetX = -48;
+    equipOffsetY = -16;
+}
+
+{
+    sprite = dagger_all_seeing_cleaver.png;
+    equippedAngle = 34.0;
+    equipOffsetX = -34;
+    equipOffsetY = -12;
+}
+
+{
+    sprite = dagger_chess_pawn_B.png;
+    equippedAngle = 30.0;
+    equipOffsetX = -32;
+    equipOffsetY = -16;
+}
+
+{
+    sprite = dagger_chess_pawn_A.png;
+    equippedAngle = 25.0;
+    equipOffsetX = -32;
+    equipOffsetY = -16;
+}
+
+{
+    sprite = spellbook_necro.png;
+    equippedAngle = 0.0;
+    equipOffsetX = -48;
+    equipOffsetY = -8;
+}
+
+{
+    sprite = spellbook_light.png;
+    equippedAngle = 0.0;
+    equipOffsetX = -38;
+    equipOffsetY = -6;
+}
+
+{
+    sprite = spellbook_earth.png;
+    equippedAngle = 0.0;
+    equipOffsetX = -38;
+    equipOffsetY = -6;
+}
+
+{
+    sprite = spellbook_water.png;
+    equippedAngle = 0.0;
+    equipOffsetX = -38;
+    equipOffsetY = -6;
+}
+
+{
+    sprite = spellbook_fire.png;
+    equippedAngle = 0.0;
+    equipOffsetX = -38;
+    equipOffsetY = -6;
+}
+
+{
+    sprite = spellbook_2.png;
+    equippedAngle = 0.0;
+    equipOffsetX = -38;
+    equipOffsetY = -6;
+}
+
+{
+    sprite = spellbook_air.png;
+    equippedAngle = 0.0;
+    equipOffsetX = -38;
+    equipOffsetY = -6;
+}
+
+{
+    sprite = spellbook_anubis.png;
+    equippedAngle = 0.0;
+    equipOffsetX = -38;
+    equipOffsetY = -6;
+}
+
+{
+    sprite = spellbook_dark.png;
+    equippedAngle = 0.0;
+    equipOffsetX = -38;
+    equipOffsetY = -6;
+}
+
+{
+    sprite = spellbook_1.png;
+    equippedAngle = 0.0;
+    equipOffsetX = -38;
+    equipOffsetY = -6;
+}
+
+{
+    sprite = mace_0.png;
+    equippedAngle = 30.0;
+    equipOffsetX = -32;
+    equipOffsetY = -10;
+}
+
+{
+    sprite = hammer_2.png;
+    equippedAngle = 30.0;
+    equipOffsetX = -32;
+    equipOffsetY = -10;
+}
+
+{
+    sprite = hammer_3.png;
+    equippedAngle = 30.0;
+    equipOffsetX = -30;
+    equipOffsetY = -8;
+}
+
+{
+    sprite = hammer_chapulin.png;
+    equippedAngle = 30.0;
+    equipOffsetX = -32;
+    equipOffsetY = -10;
+}
+
+{
+    sprite = hammer_4.png;
+    equippedAngle = 30.0;
+    equipOffsetX = -30;
+    equipOffsetY = -8;
+}
+
+{
+    sprite = hammer_mojara.png;
+    equippedAngle = 25.0;
+    equipOffsetX = -34;
+    equipOffsetY = 2;
+}
+
+{
+    sprite = hammer_verdant.png;
+    equippedAngle = 25.0;
+    equipOffsetX = -34;
+    equipOffsetY = 2;
+}
+
+{
+    sprite = hammer_falcon.png;
+    equippedAngle = 25.0;
+    equipOffsetX = -34;
+    equipOffsetY = 2;
+}
+
+{
+    sprite = hammer_light.png;
+    equippedAngle = 25.0;
+    equipOffsetX = -34;
+    equipOffsetY = 2;
+}
+
+{
+    sprite = hammer_volcano.png;
+    equippedAngle = 25.0;
+    equipOffsetX = -34;
+    equipOffsetY = 2;
+}
+
+{
+    sprite = hammer_liquid.png;
+    equippedAngle = 25.0;
+    equipOffsetX = -34;
+    equipOffsetY = 2;
+}
+
+{
+    sprite = sword_dummy.png;
+    equippedAngle = 28.0;
+    equipOffsetX = -26;
+    equipOffsetY = 2;
+}
+
+{
+    sprite = sword_dummy.png;
+    equippedAngle = 28.0;
+    equipOffsetX = -26;
+    equipOffsetY = 2;
+}
+
+{
+    sprite = hammer_poison.png;
+    equippedAngle = 25.0;
+    equipOffsetX = -34;
+    equipOffsetY = 2;
+}
+
+{
+    sprite = hammer_bone.png;
+    equippedAngle = 25.0;
+    equipOffsetX = -34;
+    equipOffsetY = 2;
+}
+
+{
+    sprite = mace_poison.png;
+    equippedAngle = 30.0;
+    equipOffsetX = -32;
+    equipOffsetY = -10;
+}
+
+{
+    sprite = hammer_ancient.png;
+    equippedAngle = 25.0;
+    equipOffsetX = -34;
+    equipOffsetY = 2;
+}
+
+{
+    sprite = hammer_fire.png;
+    equippedAngle = 25.0;
+    equipOffsetX = -34;
+    equipOffsetY = 2;
+}
+
+{
+    sprite = hammer_treasure.png;
+    equippedAngle = 25.0;
+    equipOffsetX = -34;
+    equipOffsetY = 2;
+}
+
+{
+    sprite = hammer_survivor.png;
+    equippedAngle = 25.0;
+    equipOffsetX = -34;
+    equipOffsetY = 2;
+}
+
+{
+    sprite = mace_treasure.png;
+    equippedAngle = 25.0;
+    equipOffsetX = -34;
+    equipOffsetY = 2;
+}
+
+{
+    sprite = hammer_blessed.png;
+    equippedAngle = 25.0;
+    equipOffsetX = -34;
+    equipOffsetY = 2;
+}
+
+{
+    sprite = hammer_root.png;
+    equippedAngle = 20.0;
+    equipOffsetX = -36;
+    equipOffsetY = -4;
+}
+
+{
+    sprite = hammer_cthulhu.png;
+    equippedAngle = 20.0;
+    equipOffsetX = -36;
+    equipOffsetY = -4;
+}
+
+{
+    sprite = key_0.png;
+    equippedAngle = 28.0;
+    equipOffsetX = -26;
+    equipOffsetY = 2;
+}
+
+{
+    sprite = key_1.png;
+    equippedAngle = 28.0;
+    equipOffsetX = -26;
+    equipOffsetY = 2;
+}
+
+{
+    sprite = key_2.png;
+    equippedAngle = 28.0;
+    equipOffsetX = -26;
+    equipOffsetY = 2;
+}
+
+{
+    sprite = key_scarlet.png;
+    equippedAngle = 28.0;
+    equipOffsetX = -26;
+    equipOffsetY = 2;
+}
+
+{
+    sprite = key_time.png;
+    equippedAngle = 28.0;
+    equipOffsetX = -26;
+    equipOffsetY = 2;
+}
+
+{
+    sprite = shuriken_earth.png;
+    equippedAngle = 34.0;
+    equipOffsetX = -34;
+    equipOffsetY = -12;
+}
+
+{
+    sprite = shuriken_water.png;
+    equippedAngle = 34.0;
+    equipOffsetX = -34;
+    equipOffsetY = -12;
+}
+
+{
+    sprite = shuriken_fire.png;
+    equippedAngle = 34.0;
+    equipOffsetX = -34;
+    equipOffsetY = -12;
+}
+
+{
+    sprite = shuriken_light.png;
+    equippedAngle = 34.0;
+    equipOffsetX = -34;
+    equipOffsetY = -12;
+}
+
+{
+    sprite = spear_fire.png;
+    equippedAngle = 25.0;
+    equipOffsetX = -34;
+    equipOffsetY = 2;
+}
+
+{
+    sprite = spear_earth.png;
+    equippedAngle = 25.0;
+    equipOffsetX = -34;
+    equipOffsetY = 2;
+}
+
+{
+    sprite = spear_darkness.png;
+    equippedAngle = 25.0;
+    equipOffsetX = -34;
+    equipOffsetY = 2;
+}
+
+{
+    sprite = spear_water.png;
+    equippedAngle = 25.0;
+    equipOffsetX = -34;
+    equipOffsetY = 2;
+}
+
+{
+    sprite = spear_air.png;
+    equippedAngle = 25.0;
+    equipOffsetX = -34;
+    equipOffsetY = 2;
+}
+
+{
+    sprite = spear_light.png;
+    equippedAngle = 25.0;
+    equipOffsetX = -34;
+    equipOffsetY = 2;
+}
+
+{
+    sprite = spear.png;
+    equippedAngle = 25.0;
+    equipOffsetX = -34;
+    equipOffsetY = 2;
+}
+
+{
+    sprite = spear_cthulhu.png;
+    equippedAngle = 25.0;
+    equipOffsetX = -34;
+    equipOffsetY = 2;
+}
+
+{
+    sprite = spear_spider.png;
+    equippedAngle = 25.0;
+    equipOffsetX = -34;
+    equipOffsetY = 2;
+}
+
+{
+    sprite = spear_snake.png;
+    equippedAngle = 25.0;
+    equipOffsetX = -34;
+    equipOffsetY = 2;
+}
+
+{
+    sprite = sword_dummy.png;
+    equippedAngle = 28.0;
+    equipOffsetX = -26;
+    equipOffsetY = 2;
+}
+
+{
+    sprite = sword_dummy.png;
+    equippedAngle = 28.0;
+    equipOffsetX = -26;
+    equipOffsetY = 2;
+}
+
+{
+    sprite = spear_poison.png;
+    equippedAngle = 25.0;
+    equipOffsetX = -34;
+    equipOffsetY = 2;
+}
+
+{
+    sprite = spear_air_pearl.png;
+    equippedAngle = 25.0;
+    equipOffsetX = -34;
+    equipOffsetY = 2;
+}
+
+{
+    sprite = spear_treasure.png;
+    equippedAngle = 25.0;
+    equipOffsetX = -34;
+    equipOffsetY = 2;
+}
+
+{
+    sprite = spear_survivor.png;
+    equippedAngle = 25.0;
+    equipOffsetX = -34;
+    equipOffsetY = 2;
+}
+
+{
+    sprite = spear_trident.png;
+    equippedAngle = 25.0;
+    equipOffsetX = -38;
+    equipOffsetY = -16;
+}
+
+{
+    sprite = spear_chess_queen_B.png;
+    equippedAngle = 25.0;
+    equipOffsetX = -34;
+    equipOffsetY = 2;
+}
+
+{
+    sprite = spear_chess_queen_A.png;
+    equippedAngle = 25.0;
+    equipOffsetX = -34;
+    equipOffsetY = 2;
+}
+
+{
+    sprite = staff_3.png;
+    equippedAngle = 29.0;
+    equipOffsetX = -29;
+    equipOffsetY = -1;
+}
+
+{
+    sprite = staff_4.png;
+    equippedAngle = 35.0;
+    equipOffsetX = -26;
+    equipOffsetY = 2;
+}
+
+{
+    sprite = staff_1b.png;
+    equippedAngle = 25.0;
+    equipOffsetX = -28;
+    equipOffsetY = 6;
+}
+
+{
+    sprite = staff_6.png;
+    equippedAngle = 45.0;
+    equipOffsetX = -22;
+    equipOffsetY = -1;
+}
+
+{
+    sprite = staff_7.png;
+    equippedAngle = 35.0;
+    equipOffsetX = -26;
+    equipOffsetY = 2;
+}
+
+{
+    sprite = staff_9.png;
+    equippedAngle = 20.0;
+    equipOffsetX = -34;
+    equipOffsetY = 2;
+}
+
+{
+    sprite = staff_10.png;
+    equippedAngle = 25.0;
+    equipOffsetX = -28;
+    equipOffsetY = 6;
+}
+
+{
+    sprite = staff_11.png;
+    equippedAngle = 25.0;
+    equipOffsetX = -28;
+    equipOffsetY = 6;
+}
+
+{
+    sprite = staff_12.png;
+    equippedAngle = 22.0;
+    equipOffsetX = -32;
+    equipOffsetY = -10;
+}
+
+{
+    sprite = staff_10.png;
+    equippedAngle = 25.0;
+    equipOffsetX = -28;
+    equipOffsetY = 6;
+}
+
+{
+    sprite = staff_6.png;
+    equippedAngle = 45.0;
+    equipOffsetX = -22;
+    equipOffsetY = -1;
+}
+
+{
+    sprite = staff_cthulhu.png;
+    equippedAngle = 29.0;
+    equipOffsetX = -29;
+    equipOffsetY = -1;
+}
+
+{
+    sprite = staff_stone.png;
+    equippedAngle = 25.0;
+    equipOffsetX = -32;
+    equipOffsetY = 0;
+}
+
+{
+    sprite = sword_dummy.png;
+    equippedAngle = 28.0;
+    equipOffsetX = -26;
+    equipOffsetY = 2;
+}
+
+{
+    sprite = staff_bone.png;
+    equippedAngle = 45.0;
+    equipOffsetX = -22;
+    equipOffsetY = -1;
+}
+
+{
+    sprite = staff_poison.png;
+    equippedAngle = 22.0;
+    equipOffsetX = -32;
+    equipOffsetY = -10;
+}
+
+{
+    sprite = staff_9.png;
+    equippedAngle = 20.0;
+    equipOffsetX = -34;
+    equipOffsetY = 2;
+}
+
+{
+    sprite = staff_13.png;
+    equippedAngle = 25.0;
+    equipOffsetX = -28;
+    equipOffsetY = 6;
+}
+
+{
+    sprite = staff_13.png;
+    equippedAngle = 25.0;
+    equipOffsetX = -28;
+    equipOffsetY = 6;
+}
+
+{
+    sprite = staff_halloween.png;
+    equippedAngle = 30.0;
+    equipOffsetX = -32;
+    equipOffsetY = 2;
+}
+
+{
+    sprite = staff_air.png;
+    equippedAngle = 29.0;
+    equipOffsetX = -29;
+    equipOffsetY = -1;
+}
+
+{
+    sprite = staff_earth.png;
+    equippedAngle = 25.0;
+    equipOffsetX = -28;
+    equipOffsetY = 6;
+}
+
+{
+    sprite = staff_sea.png;
+    equippedAngle = 25.0;
+    equipOffsetX = -28;
+    equipOffsetY = 6;
+}
+
+{
+    sprite = staff_treasure.png;
+    equippedAngle = 25.0;
+    equipOffsetX = -32;
+    equipOffsetY = -6;
+}
+
+{
+    sprite = staff_ice.png;
+    equippedAngle = 25.0;
+    equipOffsetX = -28;
+    equipOffsetY = 6;
+}
+
+{
+    sprite = staff_fire.png;
+    equippedAngle = 29.0;
+    equipOffsetX = -29;
+    equipOffsetY = -1;
+}
+
+{
+    sprite = staff_survivor.png;
+    equippedAngle = 25.0;
+    equipOffsetX = -32;
+    equipOffsetY = -6;
+}
+
+{
+    sprite = staff_spider.png;
+    equippedAngle = 29.0;
+    equipOffsetX = -29;
+    equipOffsetY = -1;
+}
+
+{
+    sprite = staff_2022_3.png;
+    equippedAngle = 25.0;
+    equipOffsetX = -28;
+    equipOffsetY = 6;
+}
+
+{
+    sprite = staff_darkness.png;
+    equippedAngle = 25.0;
+    equipOffsetX = -32;
+    equipOffsetY = 8;
+}
+
+{
+    sprite = staff_2022_2.png;
+    equippedAngle = 20.0;
+    equipOffsetX = -35;
+    equipOffsetY = -10;
+}
+
+{
+    sprite = staff_dragonhead.png;
+    equippedAngle = 20.0;
+    equipOffsetX = -34;
+    equipOffsetY = 2;
+}
+
+{
+    sprite = staff_xmas.png;
+    equippedAngle = 25.0;
+    equipOffsetX = -34;
+    equipOffsetY = -4;
+}
+
+{
+    sprite = sword_14.png;
+    equippedAngle = 28.0;
+    equipOffsetX = -26;
+    equipOffsetY = 2;
+}
+
+{
+    sprite = sword_4.png;
+    equippedAngle = 30.0;
+    equipOffsetX = -30;
+    equipOffsetY = -2;
+}
+
+{
+    sprite = sword_15.png;
+    equippedAngle = 30.0;
+    equipOffsetX = -30;
+    equipOffsetY = 4;
+}
+
+{
+    sprite = sword_5.png;
+    equippedAngle = 30.0;
+    equipOffsetX = -30;
+    equipOffsetY = 4;
+}
+
+{
+    sprite = sword_2.png;
+    equippedAngle = 30.0;
+    equipOffsetX = -30;
+    equipOffsetY = 4;
+}
+
+{
+    sprite = sword_6.png;
+    equippedAngle = 30.0;
+    equipOffsetX = -38;
+    equipOffsetY = -4;
+}
+
+{
+    sprite = sword_4.png;
+    equippedAngle = 30.0;
+    equipOffsetX = -30;
+    equipOffsetY = -2;
+}
+
+{
+    sprite = sword_7.png;
+    equippedAngle = 30.0;
+    equipOffsetX = -30;
+    equipOffsetY = 0;
+}
+
+{
+    sprite = sword_8.png;
+    equippedAngle = 30.0;
+    equipOffsetX = -30;
+    equipOffsetY = 0;
+}
+
+{
+    sprite = sword_9.png;
+    equippedAngle = 30.0;
+    equipOffsetX = -30;
+    equipOffsetY = -2;
+}
+
+{
+    sprite = sword_10.png;
+    equippedAngle = 30.0;
+    equipOffsetX = -30;
+    equipOffsetY = -2;
+}
+
+{
+    sprite = sword_11.png;
+    equippedAngle = 28.0;
+    equipOffsetX = -26;
+    equipOffsetY = 2;
+}
+
+{
+    sprite = sword_ice_claw.png;
+    equippedAngle = 30.0;
+    equipOffsetX = -30;
+    equipOffsetY = -2;
+}
+
+{
+    sprite = sword_13.png;
+    equippedAngle = 30.0;
+    equipOffsetX = -30;
+    equipOffsetY = -2;
+}
+
+{
+    sprite = sword_glass_1.png;
+    equippedAngle = 30.0;
+    equipOffsetX = -30;
+    equipOffsetY = 0;
+}
+
+{
+    sprite = sword_dummy.png;
+    equippedAngle = 28.0;
+    equipOffsetX = -26;
+    equipOffsetY = 2;
+}
+
+{
+    sprite = sword_dummy.png;
+    equippedAngle = 28.0;
+    equipOffsetX = -26;
+    equipOffsetY = 2;
+}
+
+{
+    sprite = sword_dummy.png;
+    equippedAngle = 28.0;
+    equipOffsetX = -26;
+    equipOffsetY = 2;
+}
+
+{
+    sprite = sword_dummy.png;
+    equippedAngle = 28.0;
+    equipOffsetX = -26;
+    equipOffsetY = 2;
+}
+
+{
+    sprite = sword_glass_2.png;
+    equippedAngle = 30.0;
+    equipOffsetX = -30;
+    equipOffsetY = 0;
+}
+
+{
+    sprite = sword_dummy.png;
+    equippedAngle = 28.0;
+    equipOffsetX = -26;
+    equipOffsetY = 2;
+}
+
+{
+    sprite = sword_glass_4.png;
+    equippedAngle = 30.0;
+    equipOffsetX = -30;
+    equipOffsetY = 0;
+}
+
+{
+    sprite = sword_dummy.png;
+    equippedAngle = 28.0;
+    equipOffsetX = -26;
+    equipOffsetY = 2;
+}
+
+{
+    sprite = sword_dummy.png;
+    equippedAngle = 28.0;
+    equipOffsetX = -26;
+    equipOffsetY = 2;
+}
+
+{
+    sprite = sword_dummy.png;
+    equippedAngle = 28.0;
+    equipOffsetX = -26;
+    equipOffsetY = 2;
+}
+
+{
+    sprite = sword_dummy.png;
+    equippedAngle = 28.0;
+    equipOffsetX = -26;
+    equipOffsetY = 2;
+}
+
+{
+    sprite = sword_dummy.png;
+    equippedAngle = 28.0;
+    equipOffsetX = -26;
+    equipOffsetY = 2;
+}
+
+{
+    sprite = sword_dummy.png;
+    equippedAngle = 28.0;
+    equipOffsetX = -26;
+    equipOffsetY = 2;
+}
+
+{
+    sprite = sword_snake.png;
+    equippedAngle = 30.0;
+    equipOffsetX = -30;
+    equipOffsetY = -2;
+}
+
+{
+    sprite = sword_cthulhu.png;
+    equippedAngle = 30.0;
+    equipOffsetX = -30;
+    equipOffsetY = -2;
+}
+
+{
+    sprite = question_mark_entity.png;
+    equippedAngle = 28.0;
+    equipOffsetX = -26;
+    equipOffsetY = 2;
+}
+
+{
+    sprite = sword_glass_3.png;
+    equippedAngle = 30.0;
+    equipOffsetX = -30;
+    equipOffsetY = 0;
+}
+
+{
+    sprite = sword_glass_0.png;
+    equippedAngle = 30.0;
+    equipOffsetX = -30;
+    equipOffsetY = 0;
+}
+
+{
+    sprite = easter-dagger.png;
+    equippedAngle = 30.0;
+    equipOffsetX = -30;
+    equipOffsetY = 0;
+}
+
+{
+    sprite = sword_poison_blade.png;
+    equippedAngle = 30.0;
+    equipOffsetX = -32;
+    equipOffsetY = -4;
+}
+
+{
+    sprite = sword_treasure_broad.png;
+    equippedAngle = 30.0;
+    equipOffsetX = -30;
+    equipOffsetY = -2;
+}
+
+{
+    sprite = sword_12.png;
+    equippedAngle = 30.0;
+    equipOffsetX = -30;
+    equipOffsetY = 0;
+}
+
+{
+    sprite = sword_treasure_skewer.png;
+    equippedAngle = 30.0;
+    equipOffsetX = -30;
+    equipOffsetY = -2;
+}
+
+{
+    sprite = sword_survivor_short.png;
+    equippedAngle = 30.0;
+    equipOffsetX = -30;
+    equipOffsetY = -2;
+}
+
+{
+    sprite = easter-sword.png;
+    equippedAngle = 30.0;
+    equipOffsetX = -30;
+    equipOffsetY = -2;
+}
+
+{
+    sprite = sword_survivor.png;
+    equippedAngle = 30.0;
+    equipOffsetX = -30;
+    equipOffsetY = -2;
+}
+
+{
+    sprite = sword_all_seeing.png;
+    equippedAngle = 30.0;
+    equipOffsetX = -30;
+    equipOffsetY = -2;
+}
+
+{
+    sprite = sword_volcano.png;
+    equippedAngle = 30.0;
+    equipOffsetX = -30;
+    equipOffsetY = 0;
+}
+
+{
+    sprite = sword_frostheart.png;
+    equippedAngle = 30.0;
+    equipOffsetX = -30;
+    equipOffsetY = -2;
+}
+
+{
+    sprite = sword_kraken.png;
+    equippedAngle = 30.0;
+    equipOffsetX = -30;
+    equipOffsetY = 0;
+}
+
+{
+    sprite = sword_spider.png;
+    equippedAngle = 30.0;
+    equipOffsetX = -30;
+    equipOffsetY = 0;
+}
+
+{
+    sprite = sword_chess_king_B.png;
+    equippedAngle = 30.0;
+    equipOffsetX = -30;
+    equipOffsetY = -2;
+}
+
+{
+    sprite = sword_chess_king_A.png;
+    equippedAngle = 30.0;
+    equipOffsetX = -30;
+    equipOffsetY = -2;
+}
+
+{
+    sprite = axe_0.png;
+    equippedAngle = 30.0;
+    equipOffsetX = -32;
+    equipOffsetY = -12;
+}
+
+{
+    sprite = mace_2.png;
+    equippedAngle = 30.0;
+    equipOffsetX = -32;
+    equipOffsetY = -2;
+}
+
+{
+    sprite = mace_1.png;
+    equippedAngle = 30.0;
+    equipOffsetX = -32;
+    equipOffsetY = -2;
+}
+
+{
+    sprite = mace_0.png;
+    equippedAngle = 30.0;
+    equipOffsetX = -32;
+    equipOffsetY = -10;
+}
+
+{
+    sprite = hammer_2_clean.png;
+    equippedAngle = 30.0;
+    equipOffsetX = -32;
+    equipOffsetY = -10;
+}
+
+{
+    sprite = hammer_0.png;
+    equippedAngle = 30.0;
+    equipOffsetX = -30;
+    equipOffsetY = -8;
+}
+
+{
+    sprite = hammer_1.png;
+    equippedAngle = 30.0;
+    equipOffsetX = -32;
+    equipOffsetY = -10;
+}
+
+{
+    sprite = wooden_hawaiian.png;
+    equippedAngle = 30.0;
+    equipOffsetX = -42;
+    equipOffsetY = -16;
+}
+
+{
+    sprite = axe_2.png;
+    equippedAngle = 30.0;
+    equipOffsetX = -32;
+    equipOffsetY = -12;
+}
+
+{
+    sprite = dagger_0.png;
+    equippedAngle = 20.0;
+    equipOffsetX = -32;
+    equipOffsetY = -12;
+}
+
+{
+    sprite = dagger_1.png;
+    equippedAngle = 20.0;
+    equipOffsetX = -38;
+    equipOffsetY = -10;
+}
+
+{
+    sprite = dagger_0.png;
+    equippedAngle = 20.0;
+    equipOffsetX = -32;
+    equipOffsetY = -12;
+}
+
+{
+    sprite = dagger_2.png;
+    equippedAngle = 34.0;
+    equipOffsetX = -30;
+    equipOffsetY = -10;
+}
+
+{
+    sprite = dagger_3.png;
+    equippedAngle = 34.0;
+    equipOffsetX = -34;
+    equipOffsetY = -12;
+}
+
+{
+    sprite = dagger_4.png;
+    equippedAngle = 34.0;
+    equipOffsetX = -36;
+    equipOffsetY = -14;
+}
+
+{
+    sprite = dagger_7.png;
+    equippedAngle = 34.0;
+    equipOffsetX = -36;
+    equipOffsetY = -14;
+}
+
+{
+    sprite = staff_5.png;
+    equippedAngle = 35.0;
+    equipOffsetX = -29;
+    equipOffsetY = -4;
+}
+
+{
+    sprite = staff_0.png;
+    equippedAngle = 35.0;
+    equipOffsetX = -26;
+    equipOffsetY = 2;
+}
+
+{
+    sprite = staff_1.png;
+    equippedAngle = 25.0;
+    equipOffsetX = -28;
+    equipOffsetY = 6;
+}
+
+{
+    sprite = sword_0.png;
+    equippedAngle = 28.0;
+    equipOffsetX = -26;
+    equipOffsetY = 2;
+}
+
+{
+    sprite = sword_1.png;
+    equippedAngle = 28.0;
+    equipOffsetX = -28;
+    equipOffsetY = 0;
+}
+
+{
+    sprite = sword_0.png;
+    equippedAngle = 28.0;
+    equipOffsetX = -26;
+    equipOffsetY = 2;
+}
+
+{
+    sprite = sword_3.png;
+    equippedAngle = 30.0;
+    equipOffsetX = -30;
+    equipOffsetY = 4;
+}

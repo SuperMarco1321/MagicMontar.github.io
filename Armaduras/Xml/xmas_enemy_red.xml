@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+
+
+<TextureAtlas imagePath="xmas_enemy_red.png" width="1024" height="512">
+    <sprite n="Sprite 1.png" x="511" y="2" w="139" h="195" oX="30" oY="8" oW="256" oH="256"/>
+    <sprite n="Sprite 2.png" x="364" y="2" w="143" h="196" oX="29" oY="6" oW="256" oH="256"/>
+    <sprite n="Sprite 3.png" x="470" y="202" w="153" h="195" oX="29" oY="8" oW="256" oH="256"/>
+    <sprite n="Sprite 4.png" x="322" y="203" w="144" h="196" oX="29" oY="6" oW="256" oH="256"/>
+    <sprite n="Sprite 5.png" x="2" y="216" w="98" h="207" oX="89" oY="16" oW="300" oH="300"/>
+    <sprite n="Sprite 6.png" x="2" y="2" w="140" h="210" oX="61" oY="15" oW="300" oH="300"/>
+    <sprite n="Sprite 7.png" x="213" y="411" w="30" h="91" oX="113" oY="82" oW="256" oH="256"/>
+    <sprite n="Sprite 8.png" x="104" y="216" w="105" h="201" oX="77" oY="20" oW="300" oH="300"/>
+    <sprite n="Sprite 9.png" x="146" y="2" w="104" h="201" oX="78" oY="20" oW="300" oH="300"/>
+    <sprite n="Sprite 10.png" x="654" y="2" w="148" h="191" oX="26" oY="10" oW="256" oH="256"/>
+    <sprite n="Sprite 11.png" x="254" y="2" w="106" h="197" oX="55" oY="2" oW="256" oH="256"/>
+    <sprite n="Sprite 12.png" x="213" y="207" w="105" h="200" oX="78" oY="21" oW="300" oH="300"/>
+    <sprite n="Sprite 13.png" x="627" y="201" w="120" h="193" oX="43" oY="10" oW="256" oH="256"/>
+    <sprite n="Sprite 14.png" x="2" y="427" w="1" h="1" oX="0" oY="0" oW="256" oH="256"/>
+    <sprite n="Sprite 15.png" x="2" y="427" w="1" h="1" oX="0" oY="0" oW="256" oH="256"/>
+    <sprite n="Sprite 16.png" x="2" y="427" w="1" h="1" oX="0" oY="0" oW="256" oH="256"/>
+</TextureAtlas>
