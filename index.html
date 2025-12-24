@@ -109,14 +109,14 @@
                 };
                 const img = document.createElement('img');
                 if (catId === 'armorCatalog' && entry.type === 'folder') {
-                    img.src = folderPreviews[entry.name] || 'https://placehold.co/100x100?text=Carregando...';
+                    img.src = folderPreviews[entry.name] || 'https://placehold.co/100x100/black/white?text=Carregando...';
                     if (!folderPreviews[entry.name]) {
                         loadFolderPreview(entry.name, img);
                     }
                 } else {
                     img.src = rawBase + `${folder}/Png/${entry.name}.png`;
                 }
-                img.onerror = () => img.src = 'https://placehold.co/100x100?text=Erro';
+                img.onerror = () => img.src = 'https://placehold.co/100x100/red/white?text=Erro';
                 div.appendChild(img);
                 const span = document.createElement('span');
                 span.innerText = (entry.display || entry.name).replace(/_/g, ' ');
@@ -138,22 +138,21 @@
                     folderPreviews[folderName] = previewUrl;
                     imgElement.src = previewUrl;
                 } else {
-                    imgElement.src = 'https://placehold.co/100x100?text=Sem+Preview';
+                    imgElement.src = 'https://placehold.co/100x100/gray/white?text=Sem+PNG';
                 }
             } catch (e) {
                 console.error(e);
-                imgElement.src = 'https://placehold.co/100x100?text=Sem+Preview';
+                imgElement.src = 'https://placehold.co/100x100/red/white?text=Erro+Preview';
             }
         }
 
         async function loadArmor(name, type) {
-            helmetToggle.classList.remove('disabled');
+            helmetToggle.classList.toggle('disabled', type === 'single');
             let pngUrl, xmlUrl;
 
             if (type === 'single') {
                 pngUrl = `${folders.armor}/Png/${name}.png`;
                 xmlUrl = `${folders.armor}/Xml/${name}.xml`;
-                helmetToggle.classList.add('disabled');
             } else { // folder
                 const apiUrl = `https://api.github.com/repos/SuperMarco1321/MagicMontar.github.io/contents/${folders.armor}/Png/${name}`;
                 try {
@@ -162,11 +161,14 @@
                     const files = await res.json();
                     let pngFiles = files.filter(f => f.name.toLowerCase().endsWith('.png')).map(f => f.name).sort((a,b) => a.localeCompare(b));
                     if (pngFiles.length === 0) throw new Error('Sem PNGs');
-                    const index = withHelmet ? 0 : Math.min(1, pngFiles.length - 1);
+                    // Prioridade: se tiver arquivo com "nohelmet" ou similar, mas como você disse ordem alfabética:
+                    const index = withHelmet ? 0 : (pngFiles.length >= 2 ? 1 : 0);
                     const selectedPng = pngFiles[index];
-                    const baseName = selectedPng.replace(/\.png$/i, '');
+                    const baseName = selectedPng.replace('.png', '');
                     pngUrl = `${folders.armor}/Png/${name}/${selectedPng}`;
                     xmlUrl = `${folders.armor}/Xml/${name}/${baseName}.xml`;
+
+                    // Atualiza botão se tiver menos de 2 PNGs
                     if (pngFiles.length < 2) helmetToggle.classList.add('disabled');
                 } catch (e) {
                     console.error(e);
@@ -189,11 +191,11 @@
             data.armor = { img };
 
             try {
-                const xmlText = await fetch(fullXml).then(r => r.ok ? r.text() : Promise.reject('XML não encontrado'));
+                const xmlText = await fetch(fullXml).then(r => r.ok ? r.text() : Promise.reject());
                 data.armor.sprites = parseXML(xmlText);
             } catch (err) {
-                console.warn('XML não encontrado ou erro, usando posicionamento padrão (apenas PNG inteiro)');
-                data.armor.sprites = [];
+                console.warn('XML não encontrado ou erro, usando PNG completo sem sprites');
+                data.armor.sprites = []; // Usa o PNG inteiro como fallback se XML falhar
             }
 
             updatePreview();
@@ -304,11 +306,10 @@
                         const crop = cropImage(data[key].img, s.x, s.y, s.w, s.h);
                         const pos = calcularPosicao(pivotX, pivotY, s);
                         crops.push({ img: crop, pos, key });
-                    } else {
-                        // Caso sem XML: sobrepõe a imagem inteira centrada no pivot
-                        const crop = data[key].img; // canvas da imagem completa
-                        const pos = [pivotX - crop.width / 2, pivotY - crop.height / 2];
-                        crops.push({ img: crop, pos, key });
+                    } else if (key === 'armor' && data[key].img) {
+                        // Fallback para armaduras sem XML: desenha PNG inteiro centrado no pivot
+                        const pos = [pivotX - data[key].img.width / 2, pivotY - data[key].img.height / 2];
+                        crops.push({ img: data[key].img, pos, key });
                     }
                 }
             });
@@ -402,12 +403,12 @@
             }
             const zip = new JSZip();
             const total = data.body.sprites.length;
-            document.getElementById('status').innerText = 'Gerando ZIP... (0/' + total + ')';
+            document.getElementById('status').innerText = 'Gerando ZIP... 0%';
             for (let i = 0; i < total; i++) {
                 const canvas = montarFrame(i);
                 const blob = await new Promise(r => canvas.toBlob(r));
                 zip.file(`${data.body.sprites[i].name.replace(/[\\/]/g, '_')}.png`, blob);
-                document.getElementById('status').innerText = 'Gerando ZIP... (' + (i+1) + '/' + total + ')';
+                document.getElementById('status').innerText = `Gerando ZIP... ${Math.round((i+1)/total*100)}%`;
             }
             const content = await zip.generateAsync({type: 'blob'});
             saveAs(content, 'Personagem_MagicRampage.zip');
@@ -423,13 +424,14 @@
 
         async function loadCatalog() {
             try {
-                const res = await fetch(basePath + 'catalog.json');
+                const res = await fetch(rawBase + 'catalog.json');
                 if (!res.ok) throw new Error();
                 catalog = await res.json();
 
                 const armorList = [];
                 catalog.armor.folders.forEach(name => armorList.push({name, type: 'folder', display: name}));
                 catalog.armor.single.forEach(name => armorList.push({name, type: 'single', display: name.replace(/_/g, ' ')}));
+
                 armorList.sort((a,b) => a.display.localeCompare(b.display));
 
                 createCatalog('bodyCatalog', catalog.body.map(n=>({name:n})), folders.body);
