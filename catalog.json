@@ -124,7 +124,6 @@
         "rat_halloween_2020"
     ],
     "eye": [
-        "cabeludo",
         "eyeKing",
         "eye_0a",
         "eye_0b",
@@ -132,12 +131,7 @@
         "eye_1b",
         "eye_2a",
         "eye_2b",
-        "sla",
-        "sprite_0_0",
-        "sprite_0_1",
-        "sprite_0_2",
-        "velgooo",
-        "velho"
+        "sla"
     ],
     "weapon": []
 }
