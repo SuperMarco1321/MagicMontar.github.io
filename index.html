@@ -310,191 +310,163 @@
                             selectedSkinClass = entry;
                             document.getElementById('selectedClassTitle').innerText = entry.class + ' Skins';
                             document.getElementById('skinVariationsContainer').style.display = 'block';
-                            createCatalog('skinVariationsCatalog', entry.variations.map(v => ({name: v})), folder, false, false, true);
+                            createCatalog('skinVariationsCatalog', entry.variations.map(v => ({name: v, class_folder: entry.folder})), folders.head, false, false, true);
                         } else if (isSkinVariation) {
-                            selected.head = entry.name;
-                            loadHead(entry.name);
+                            selected.head = {type: 'skin', name: entry.name, class_folder: entry.class_folder};
+                            loadHeadAsset(entry.name, entry.class_folder);
+                        } else if (catId === 'headNormalCatalog') {
+                            selected.head = {type: 'normal', name: entry.name};
+                            loadHeadAsset(entry.name);
                         } else if (catId === 'armorCatalog') {
                             selected.armor = entry;
-                            helmetToggle.classList.remove('disabled');
                             loadArmor(entry);
-                        } else if (catId === 'headNormalCatalog') {
-                            selected.head = entry.name;
-                            loadHead(entry.name);
-                        } else if (isWeapon) {
-                            selected.weapon = entry.name;
-                            loadWeapon(entry.name);
                         } else {
-                            const key = catId.replace('Catalog', '').replace('Normal', '');
+                            const key = catId.replace('Catalog', '');
                             selected[key] = entry.name;
-                            if (key === 'body') loadBody(entry.name);
-                            else if (key === 'amuleto') loadAmuleto(entry.name);
-                            else if (key === 'pet') loadPet(entry.name);
-                            else if (key === 'eye') loadEye(entry.name);
+                            loadAsset(key, entry.name, folder, isWeapon);
                         }
                     }
                     updatePreview();
                 };
-
                 const img = document.createElement('img');
-                let previewName = entry.preview_png || entry.name;
-                if (entry.type === 'folder') {
-                    previewName = entry.with_helmet;  // Usa a versão com elmo como preview para pastas de armadura
+                if (isSkinClass) {
+                    img.src = basePath + `${folders.head}/Png/Skins/${entry.folder}/${entry.preview_png}.png`;
+                } else if (isSkinVariation) {
+                    img.src = basePath + `${folders.head}/Png/Skins/${entry.class_folder}/${entry.name}.png`;
+                } else if (catId === 'armorCatalog' && entry.type === 'folder') {
+                    img.src = basePath + `${folders.armor}/Png/${entry.name}/${entry.with_helmet}.png`;
+                } else {
+                    img.src = basePath + `${folder}/Png/${entry.name}.png`;
                 }
-                img.src = `${basePath}${folder}/Png/${previewName}.png`;
-                img.alt = entry.display || entry.name || entry.class;
-
-                const span = document.createElement('span');
-                span.textContent = entry.display || entry.name.replace(/_/g, ' ') || entry.class;
-
+                img.onerror = () => img.src = 'https://placehold.it/100x100?text=Erro';
                 div.appendChild(img);
+                const span = document.createElement('span');
+                span.innerText = (entry.display || entry.class || entry.name).replace(/_/g, ' ');
                 div.appendChild(span);
                 cat.appendChild(div);
             });
         }
 
-        function parseXml(xmlText) {
-            const parser = new DOMParser();
-            const xml = parser.parseFromString(xmlText, 'text/xml');
-            const sprites = [];
-            xml.querySelectorAll('sprite').forEach(s => {
-                sprites.push({
-                    name: s.getAttribute('n'),
-                    x: parseInt(s.getAttribute('x')),
-                    y: parseInt(s.getAttribute('y')),
-                    w: parseInt(s.getAttribute('w')),
-                    h: parseInt(s.getAttribute('h')),
-                    oX: parseInt(s.getAttribute('oX') || 0),
-                    oY: parseInt(s.getAttribute('oY') || 0),
-                    oW: parseInt(s.getAttribute('oW') || 0),
-                    oH: parseInt(s.getAttribute('oH') || 0),
-                    pX: parseFloat(s.getAttribute('pX') || 0.5),
-                    pY: parseFloat(s.getAttribute('pY') || 0.5),
-                });
-            });
-            return sprites;
-        }
-
-        function loadBody(name) {
-            fetch(`${basePath}${folders.body}/Xml/${name}.xml`)
+        function loadHeadAsset(name, class_folder = null) {
+            data.head = {img: new Image(), sprites: []};
+            let pngUrl = class_folder ? `${folders.head}/Png/Skins/${class_folder}/${name}.png` : `${folders.head}/Png/${name}.png`;
+            data.head.img.src = basePath + pngUrl;
+            data.head.img.onload = () => updatePreview();
+            fetch(basePath + `${folders.head}/Xml/${name}.xml`)
                 .then(res => res.text())
                 .then(xml => {
-                    data.body = { sprites: parseXml(xml) };
-                    return new Promise(resolve => {
-                        const img = new Image();
-                        img.src = `${basePath}${folders.body}/Png/${name}.png`;
-                        img.onload = () => {
-                            data.body.img = img;
-                            resolve();
-                        };
-                    });
+                    const parser = new DOMParser();
+                    const doc = parser.parseFromString(xml, "text/xml");
+                    data.head.sprites = Array.from(doc.getElementsByTagName('sprite')).map(s => ({
+                        name: s.getAttribute('n'),
+                        x: parseInt(s.getAttribute('x')),
+                        y: parseInt(s.getAttribute('y')),
+                        w: parseInt(s.getAttribute('w')),
+                        h: parseInt(s.getAttribute('h')),
+                        oX: parseInt(s.getAttribute('oX') || 0),
+                        oY: parseInt(s.getAttribute('oY') || 0),
+                        oW: parseInt(s.getAttribute('oW') || 0),
+                        oH: parseInt(s.getAttribute('oH') || 0),
+                        pX: parseFloat(s.getAttribute('pX') || 0.5),
+                        pY: parseFloat(s.getAttribute('pY') || 0.5)
+                    }));
+                    updatePreview();
                 })
-                .then(updatePreview)
                 .catch(e => {
-                    console.error('Erro XML:', e);
-                    delete data.body;
+                    console.error('Erro XML head:', e);
+                    delete data.head;
                     updatePreview();
                 });
         }
 
-        function loadArmor(entry) {
-            let name;
-            if (entry.type === 'folder') {
-                name = withHelmet ? entry.with_helmet : entry.without_helmet;
+        async function loadArmor(entry) {
+            helmetToggle.classList.remove('disabled');
+            let pngUrl, xmlUrl, baseName;
+
+            if (entry.type === 'single') {
+                baseName = entry.name;
+                pngUrl = `${folders.armor}/Png/${baseName}.png`;
+                xmlUrl = `${folders.armor}/Xml/${baseName}.xml`;
+                helmetToggle.classList.add('disabled');
             } else {
-                name = entry.name;
+                baseName = withHelmet ? entry.with_helmet : entry.without_helmet;
+                pngUrl = `${folders.armor}/Png/${entry.name}/${baseName}.png`;
+                xmlUrl = `${folders.armor}/Xml/${baseName}.xml`;
+                if (entry.with_helmet === entry.without_helmet) {
+                    helmetToggle.classList.add('disabled');
+                }
             }
-            fetch(`${basePath}${folders.armor}/Xml/${name}.xml`)
-                .then(res => res.text())
-                .then(xml => {
-                    data.armor = { sprites: parseXml(xml) };
-                    return new Promise(resolve => {
-                        const img = new Image();
-                        img.src = `${basePath}${folders.armor}/Png/${name}.png`;
-                        img.onload = () => {
-                            data.armor.img = img;
-                            resolve();
-                        };
-                    });
+
+            data.armor = {img: new Image(), sprites: []};
+            data.armor.img.src = basePath + pngUrl;
+            data.armor.img.onload = () => updatePreview();
+
+            fetch(basePath + xmlUrl)
+                .then(res => {
+                    if (!res.ok) throw new Error('XML não encontrado');
+                    return res.text();
                 })
-                .then(updatePreview)
+                .then(xml => {
+                    const parser = new DOMParser();
+                    const doc = parser.parseFromString(xml, "text/xml");
+                    data.armor.sprites = Array.from(doc.getElementsByTagName('sprite')).map(s => ({
+                        name: s.getAttribute('n'),
+                        x: parseInt(s.getAttribute('x')),
+                        y: parseInt(s.getAttribute('y')),
+                        w: parseInt(s.getAttribute('w')),
+                        h: parseInt(s.getAttribute('h')),
+                        oX: parseInt(s.getAttribute('oX') || 0),
+                        oY: parseInt(s.getAttribute('oY') || 0),
+                        oW: parseInt(s.getAttribute('oW') || 0),
+                        oH: parseInt(s.getAttribute('oH') || 0),
+                        pX: parseFloat(s.getAttribute('pX') || 0.5),
+                        pY: parseFloat(s.getAttribute('pY') || 0.5)
+                    }));
+                    updatePreview();
+                })
                 .catch(e => {
-                    console.error('Erro XML:', e);
+                    console.error('Erro ao carregar XML:', e);
+                    document.getElementById('status').innerText = 'Erro ao carregar XML de armadura.';
                     delete data.armor;
                     updatePreview();
                 });
         }
 
-        function loadAmuleto(name) {
-            loadGeneric('amuleto', name);
-        }
-
-        function loadPet(name) {
-            loadGeneric('pet', name);
-        }
-
-        function loadHead(name) {
-            loadGeneric('head', name);
-        }
-
-        function loadEye(name) {
-            loadGeneric('eye', name);
-        }
-
-        function loadWeapon(name) {
-            fetch(`${basePath}Arma/Angulos.txt`)
-                .then(res => res.text())
-                .then(txt => {
-                    const regex = new RegExp(`\\{[^}]*sprite\\s*=\\s*${name};\\s*[^}]*\\}`, 'g');
-                    const bloco = txt.match(regex);
-                    let angle = 0;
-                    let offset = [0, 0];
-                    if (bloco) {
-                        const equippedAngleMatch = bloco[0].match(/equippedAngle\s*=\s*([-\d.]+);/);
-                        const equipOffsetXMatch = bloco[0].match(/equipOffsetX\s*=\s*([-\d]+);/);
-                        const equipOffsetYMatch = bloco[0].match(/equipOffsetY\s*=\s*([-\d]+);/);
-                        if (equippedAngleMatch) angle = parseFloat(equippedAngleMatch[1]);
-                        if (equipOffsetXMatch) offset[0] = parseInt(equipOffsetXMatch[1]);
-                        if (equipOffsetYMatch) offset[1] = parseInt(equipOffsetYMatch[1]);
-                    }
-                    data.weapon = { angle, offset };
-                    return new Promise(resolve => {
-                        const img = new Image();
-                        img.src = `${basePath}${folders.weapon}/Png/${name}.png`;
-                        img.onload = () => {
-                            data.weapon.img = img;
-                            resolve();
-                        };
+        function loadAsset(key, name, folder, isWeapon = false) {
+            data[key] = {img: new Image(), sprites: []};
+            data[key].img.src = basePath + `${folder}/Png/${name}.png`;
+            data[key].img.onload = () => updatePreview();
+            if (!isWeapon) {
+                fetch(basePath + `${folder}/Xml/${name}.xml`)
+                    .then(res => res.text())
+                    .then(xml => {
+                        const parser = new DOMParser();
+                        const doc = parser.parseFromString(xml, "text/xml");
+                        data[key].sprites = Array.from(doc.getElementsByTagName('sprite')).map(s => ({
+                            name: s.getAttribute('n'),
+                            x: parseInt(s.getAttribute('x')),
+                            y: parseInt(s.getAttribute('y')),
+                            w: parseInt(s.getAttribute('w')),
+                            h: parseInt(s.getAttribute('h')),
+                            oX: parseInt(s.getAttribute('oX') || 0),
+                            oY: parseInt(s.getAttribute('oY') || 0),
+                            oW: parseInt(s.getAttribute('oW') || 0),
+                            oH: parseInt(s.getAttribute('oH') || 0),
+                            pX: parseFloat(s.getAttribute('pX') || 0.5),
+                            pY: parseFloat(s.getAttribute('pY') || 0.5)
+                        }));
+                        updatePreview();
+                    })
+                    .catch(e => {
+                        console.error('Erro XML:', e);
+                        delete data[key];
+                        updatePreview();
                     });
-                })
-                .then(updatePreview)
-                .catch(e => {
-                    console.error('Erro:', e);
-                    delete data.weapon;
-                    updatePreview();
-                });
-        }
-
-        function loadGeneric(key, name) {
-            fetch(`${basePath}${folders[key]}/Xml/${name}.xml`)
-                .then(res => res.text())
-                .then(xml => {
-                    data[key] = { sprites: parseXml(xml) };
-                    return new Promise(resolve => {
-                        const img = new Image();
-                        img.src = `${basePath}${folders[key]}/Png/${name}.png`;
-                        img.onload = () => {
-                            data[key].img = img;
-                            resolve();
-                        };
-                    });
-                })
-                .then(updatePreview)
-                .catch(e => {
-                    console.error('Erro XML:', e);
-                    delete data[key];
-                    updatePreview();
-                });
+            } else {
+                data[key].angle = 0;
+                data[key].offset = [0, 0];
+                updatePreview();
+            }
         }
 
         function tintImage(img, color) {
