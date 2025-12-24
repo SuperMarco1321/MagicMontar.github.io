@@ -7,28 +7,28 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
     <style>
-        body { font-family: Arial, sans-serif; background: #111; color: #fff; padding: 20px; text-align: center; margin: 0; }
-        h1 { color: #ffcc00; margin: 10px 0; }
-        h2 { color: #ddd; margin: 25px 0 10px; }
-        .catalog { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 12px; max-width: 1200px; margin: 0 auto; }
-        .item { background: #1a1a1a; padding: 8px; border-radius: 6px; cursor: pointer; transition: all 0.2s; text-align: center; }
-        .item:hover { background: #2a2a2a; transform: scale(1.03); }
-        .item img { width: 100%; height: 110px; object-fit: contain; image-rendering: pixelated; background: #000; border-radius: 4px; }
-        .item span { display: block; margin-top: 6px; font-size: 0.78em; color: #ccc; }
-        .item.selected { border: 2px solid #ffcc00; background: #222; }
-        canvas { border: 2px solid #444; margin: 25px auto; display: block; image-rendering: pixelated; max-width: 90%; background: #000; border-radius: 6px; }
-        button { padding: 12px 28px; background: #ffcc00; color: #000; border: none; font-size: 16px; cursor: pointer; margin: 8px; border-radius: 6px; font-weight: bold; }
-        button:hover { background: #ffe044; }
-        button:disabled { background: #555; color: #888; cursor: not-allowed; }
-        #helmetToggle { min-width: 140px; }
-        label { margin: 8px 0; font-size: 1.1em; }
-        input[type="color"] { width: 60px; height: 35px; vertical-align: middle; }
-        #status { margin: 15px 0; font-size: 1.15em; color: #aaa; }
+        body { font-family: Arial, sans-serif; background: #111; color: #fff; padding: 20px; text-align: center; }
+        h1 { color: #ffcc00; }
+        h2 { color: #ddd; margin-top: 30px; }
+        .catalog { display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 15px; margin: 20px auto; max-width: 1200px; }
+        .item { background: #222; padding: 10px; border-radius: 8px; cursor: pointer; transition: 0.3s; }
+        .item:hover { background: #333; }
+        .item img { width: 100%; height: 100px; object-fit: contain; image-rendering: pixelated; background: rgba(0,0,0,0.5); border-radius: 5px; }
+        .item span { display: block; margin-top: 5px; font-size: 0.8em; text-transform: capitalize; }
+        .item.selected { border: 3px solid #ffcc00; }
+        canvas { border: 2px solid #444; margin: 20px auto; display: block; image-rendering: pixelated; max-width: 100%; background: #000; }
+        button { padding: 15px 30px; background: #ffcc00; color: #000; border: none; font-size: 18px; cursor: pointer; margin: 10px; border-radius: 8px; }
+        button:hover { background: #ffdd44; }
+        label { display: block; margin: 10px 0; }
+        input[type="color"] { width: 50px; height: 30px; }
+        #status { margin: 20px; font-size: 1.2em; color: #bbb; }
+        #helmetToggle { padding: 10px 20px; background: #ffcc00; color: #000; font-size: 16px; margin: 10px auto; display: inline-block; border-radius: 8px; cursor: pointer; }
+        #helmetToggle.disabled { background: #555; color: #888; cursor: not-allowed; }
     </style>
 </head>
 <body>
     <h1>Montador de Personagens Magic Rampage</h1>
-    <p>Criado por Marco para a comunidade</p>
+    <p>Criado por Marco para a comunidade! Clique nas imagens para selecionar.</p>
 
     <label>Cor do corpo: <input type="color" id="bodyColor" value="#ffffff"></label>
     <label>Cor dos olhos: <input type="color" id="eyeColor" value="#ffffff"></label>
@@ -49,7 +49,7 @@
     <h2>Cabeça</h2>
     <div class="catalog" id="headCatalog"></div>
 
-    <h2>Olhos</h2>
+    <h2>Olhos (com brilho additive)</h2>
     <div class="catalog" id="eyeCatalog"></div>
 
     <h2>Arma</h2>
@@ -64,122 +64,214 @@
     <script>
         const basePath = '';
         const folders = {
-            body: 'Corpo', armor: 'Armaduras', amuleto: 'Amuleto',
-            pet: 'Pet', head: 'Cabeça', eye: 'Olho', weapon: 'Arma'
+            body: 'Corpo',
+            armor: 'Armaduras',
+            amuleto: 'Amuleto',
+            pet: 'Pet',
+            head: 'Cabeça',
+            eye: 'Olho',
+            weapon: 'Arma'
         };
 
-        let catalogData = {};
-        let selectedItems = {};
-        let loadedAssets = {};
-        let bodyTint = {r:255,g:255,b:255};
-        let eyeTint = {r:255,g:255,b:255};
-        let useHelmet = true;
+        let catalog = {};
+        let selected = {};
+        let data = {};
+        let bodyColor = {r: 255, g: 255, b: 255};
+        let eyeColor = {r: 255, g: 255, b: 255};
+        let withHelmet = true;
+        let folderFiles = {}; // Cache dos arquivos PNG por pasta
+        let folderPreviews = {}; // Cache dos previews
 
-        const toggleBtn = document.getElementById('helmetToggle');
-        toggleBtn.onclick = () => {
-            if (toggleBtn.disabled) return;
-            useHelmet = !useHelmet;
-            toggleBtn.textContent = useHelmet ? 'Com Elmo' : 'Sem Elmo';
-            if (selectedItems.armor) loadArmor(selectedItems.armor);
+        const helmetToggle = document.getElementById('helmetToggle');
+        helmetToggle.onclick = () => {
+            if (helmetToggle.classList.contains('disabled')) return;
+            withHelmet = !withHelmet;
+            helmetToggle.textContent = withHelmet ? 'Com Elmo' : 'Sem Elmo';
+            if (selected.armor) loadArmor(selected.armor.name, selected.armor.type);
         };
 
-        function createCatalog(id, items, baseFolder, isWeapon = false) {
-            const container = document.getElementById(id);
-            container.innerHTML = '';
-            items.forEach(name => {
-                const itemDiv = document.createElement('div');
-                itemDiv.className = 'item';
-                itemDiv.onclick = () => selectItem(id.replace('Catalog',''), name, baseFolder, isWeapon);
+        function createCatalog(catId, list, folder, isWeapon = false) {
+            const cat = document.getElementById(catId);
+            cat.innerHTML = '';
+            list.forEach(entry => {
+                const div = document.createElement('div');
+                div.className = 'item';
+                div.onclick = () => {
+                    document.querySelectorAll(`#${catId} .selected`).forEach(el => el.classList.remove('selected'));
+                    div.classList.add('selected');
+                    if (catId === 'armorCatalog') {
+                        selected.armor = entry;
+                        loadArmor(entry.name, entry.type);
+                    } else {
+                        selected[catId.replace('Catalog', '')] = entry.name;
+                        loadAsset(catId.replace('Catalog', ''), entry.name, folder, isWeapon);
+                    }
+                };
                 const img = document.createElement('img');
-                img.src = `${basePath}${baseFolder}/Png/${name}.png`;
-                img.onerror = () => img.src = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAErgG8vK8AAAAASUVORK5CYII='; // 1x1 preto
-                const label = document.createElement('span');
-                label.textContent = name.replace(/_/g,' ').replace(/[-+]/g,'');
-                itemDiv.append(img, label);
-                container.appendChild(itemDiv);
+                if (catId === 'armorCatalog' && entry.type === 'folder') {
+                    img.src = folderPreviews[entry.name] || 'https://placehold.it/100x100?text=Carregando...';
+                    if (!folderFiles[entry.name]) {
+                        loadFolderFiles(entry.name, img);
+                    } else if (!folderPreviews[entry.name]) {
+                        setPreview(entry.name, img);
+                    }
+                } else {
+                    img.src = basePath + `${folder}/Png/${entry.name}.png`;
+                }
+                img.onerror = () => img.src = 'https://placehold.it/100x100?text=Erro';
+                div.appendChild(img);
+                const span = document.createElement('span');
+                span.innerText = (entry.display || entry.name).replace(/_/g, ' ');
+                div.appendChild(span);
+                cat.appendChild(div);
             });
         }
 
-        async function selectItem(type, name, folder, isWeapon) {
-            document.querySelectorAll(`#${type}Catalog .selected`)?.forEach(el => el.classList.remove('selected'));
-            event.currentTarget.classList.add('selected');
-            selectedItems[type] = name;
-            if (type === 'armor') {
-                await loadArmor(name);
-            } else {
-                await loadAsset(type, name, folder, isWeapon);
+        async function loadFolderFiles(folderName, imgElement = null) {
+            const repo = 'SuperMarco1321/MagicMontar.github.io';
+            const apiUrl = `https://api.github.com/repos/${repo}/contents/${folders.armor}/Png/${folderName}`;
+            try {
+                const res = await fetch(apiUrl);
+                if (!res.ok) throw new Error('Erro ao acessar API GitHub');
+                const files = await res.json();
+                const pngFiles = files
+                    .filter(f => f.name.toLowerCase().endsWith('.png'))
+                    .map(f => f.name)
+                    .sort((a, b) => a.localeCompare(b));
+                folderFiles[folderName] = pngFiles;
+                if (imgElement) setPreview(folderName, imgElement);
+            } catch (e) {
+                console.error(`Erro ao carregar pasta ${folderName}:`, e);
+                if (imgElement) imgElement.src = 'https://placehold.it/100x100?text=Erro';
             }
         }
 
-        async function loadArmor(armorName) {
-            toggleBtn.disabled = true;
-            toggleBtn.textContent = 'Carregando...';
-            let variant = useHelmet ? 'a' : 'b';
-            let pngPath = `${folders.armor}/Png/${armorName}/armor_${variant}.png`;
-            let xmlPath = `${folders.armor}/Xml/${armorName}/armor_${variant}.xml`;
+        function setPreview(folderName, imgElement) {
+            const pngFiles = folderFiles[folderName];
+            if (pngFiles && pngFiles.length > 0) {
+                const firstPng = pngFiles[0];
+                const previewUrl = basePath + `${folders.armor}/Png/${folderName}/${firstPng}`;
+                folderPreviews[folderName] = previewUrl;
+                if (imgElement) imgElement.src = previewUrl;
+            } else if (imgElement) {
+                imgElement.src = 'https://placehold.it/100x100?text=Sem+PNG';
+            }
+        }
 
-            // Fallback: tenta o primeiro .png que existir (sem API)
-            let response = await fetch(basePath + pngPath);
-            if (!response.ok) {
-                // Tenta o outro variant
-                variant = useHelmet ? 'b' : 'a';
-                pngPath = `${folders.armor}/Png/${armorName}/armor_${variant}.png`;
-                xmlPath = `${folders.armor}/Xml/${armorName}/armor_${variant}.xml`;
-                response = await fetch(basePath + pngPath);
-                if (!response.ok) {
-                    // Último fallback: tenta qualquer .png na pasta (mas precisa do nome exato)
-                    document.getElementById('status').textContent = 'Armadura não encontrada ou sem variante';
-                    toggleBtn.textContent = useHelmet ? 'Com Elmo' : 'Sem Elmo';
+        async function loadArmor(name, type) {
+            helmetToggle.classList.remove('disabled');
+            let pngUrl, xmlUrl;
+
+            if (type === 'single') {
+                pngUrl = `${folders.armor}/Png/${name}.png`;
+                xmlUrl = `${folders.armor}/Xml/${name}.xml`;
+                helmetToggle.classList.add('disabled');
+            } else {
+                if (!folderFiles[name]) await loadFolderFiles(name);
+                const pngFiles = folderFiles[name] || [];
+                if (pngFiles.length === 0) {
+                    document.getElementById('status').innerText = 'Sem PNG na pasta.';
                     return;
                 }
+                const index = withHelmet ? 0 : Math.min(1, pngFiles.length - 1);
+                const selectedPng = pngFiles[index];
+                const baseName = selectedPng.replace('.png', '');
+                pngUrl = `${folders.armor}/Png/${name}/${selectedPng}`;
+                xmlUrl = `${folders.armor}/Xml/${name}/${baseName}.xml`;
+                if (pngFiles.length < 2) helmetToggle.classList.add('disabled');
             }
 
-            toggleBtn.disabled = false;
-            toggleBtn.textContent = useHelmet ? 'Com Elmo' : 'Sem Elmo';
+            const fullPng = basePath + pngUrl;
+            const fullXml = basePath + xmlUrl;
 
             const img = new Image();
-            img.crossOrigin = "anonymous";
-            img.src = basePath + pngPath;
-            await new Promise(r => { img.onload = r; img.onerror = r; });
+            img.crossOrigin = 'anonymous';
+            img.src = fullPng;
+            await new Promise((resolve, reject) => {
+                img.onload = resolve;
+                img.onerror = () => {
+                    console.error('Erro ao carregar PNG:', fullPng);
+                    reject();
+                };
+            });
 
-            loadedAssets.armor = { img, sprites: [] };
+            data.armor = { img };
 
             try {
-                const xml = await fetch(basePath + xmlPath).then(r => r.ok ? r.text() : '');
-                if (xml) loadedAssets.armor.sprites = parseXML(xml);
-            } catch {}
+                const xmlText = await fetch(fullXml).then(r => {
+                    if (!r.ok) throw new Error('XML não encontrado');
+                    return r.text();
+                });
+                data.armor.sprites = parseXML(xmlText);
+            } catch (e) {
+                console.warn('Usando PNG como sprite único:', e);
+                data.armor.sprites = [{
+                    name: 'default',
+                    x: 0,
+                    y: 0,
+                    w: img.width,
+                    h: img.height,
+                    oX: 0,
+                    oY: 0,
+                    oW: img.width,
+                    oH: img.height,
+                    pX: 0.5,
+                    pY: 0.5
+                }];
+            }
 
             updatePreview();
         }
 
         async function loadAsset(type, name, folder, isWeapon) {
-            const png = `${folder}/Png/${name}.png`;
-            const xml = isWeapon ? null : `${folder}/Xml/${name}.xml`;
+            const pngUrl = isWeapon ? `${folder}/Png/${name}.png` : `${folder}/Png/${name}.png`;
+            const xmlUrl = isWeapon ? null : `${folder}/Xml/${name}.xml`;
 
             const img = new Image();
-            img.crossOrigin = "anonymous";
-            img.src = basePath + png;
-            await new Promise(r => { img.onload = r; img.onerror = r; });
+            img.crossOrigin = 'anonymous';
+            img.src = basePath + pngUrl;
+            await new Promise((resolve, reject) => {
+                img.onload = resolve;
+                img.onerror = reject;
+            });
 
-            loadedAssets[type] = { img, sprites: [] };
+            data[type] = { img };
 
-            if (xml) {
+            if (!isWeapon && xmlUrl) {
                 try {
-                    const text = await fetch(basePath + xml).then(r => r.text());
-                    loadedAssets[type].sprites = parseXML(text);
-                } catch {}
+                    const xmlText = await fetch(basePath + xmlUrl).then(r => {
+                        if (!r.ok) throw new Error();
+                        return r.text();
+                    });
+                    data[type].sprites = parseXML(xmlText);
+                } catch {
+                    data[type].sprites = [{
+                        name: 'default',
+                        x: 0,
+                        y: 0,
+                        w: img.width,
+                        h: img.height,
+                        oX: 0,
+                        oY: 0,
+                        oW: img.width,
+                        oH: img.height,
+                        pX: 0.5,
+                        pY: 0.5
+                    }];
+                }
             }
 
             if (isWeapon) {
+                const angulosUrl = basePath + 'Arma/Angulos.txt';
                 try {
-                    const ang = await fetch(basePath + 'Arma/Angulos.txt').then(r => r.text());
-                    const block = ang.match(new RegExp(`sprite\\s*=\\s*${name.replace('.', '\\.')}[^}]*`, 'i'));
-                    if (block) {
-                        loadedAssets[type].angle = parseFloat(block[0].match(/equippedAngle\s*=\s*([-.\d]+)/)?.[1] || 0);
-                        loadedAssets[type].offset = [
-                            parseInt(block[0].match(/equipOffsetX\s*=\s*([-.\d]+)/)?.[1] || 0),
-                            parseInt(block[0].match(/equipOffsetY\s*=\s*([-.\d]+)/)?.[1] || 0)
-                        ];
+                    const text = await fetch(angulosUrl).then(r => r.text());
+                    const bloco = text.match(new RegExp(`\\{[^}]*sprite\\s*=\\s*${name.replace('.', '\\.')};[^}]*\\}`));
+                    if (bloco) {
+                        const angle = bloco[0].match(/equippedAngle\\s*=\\s*([-\\d.]+)/);
+                        const ox = bloco[0].match(/equipOffsetX\\s*=\\s*([-\\d]+)/);
+                        const oy = bloco[0].match(/equipOffsetY\\s*=\\s*([-\\d]+)/);
+                        data[type].angle = angle ? parseFloat(angle[1]) : 0;
+                        data[type].offset = [ox ? parseInt(ox[1]) : 0, oy ? parseInt(oy[1]) : 0];
                     }
                 } catch {}
             }
@@ -187,116 +279,91 @@
             updatePreview();
         }
 
-        function parseXML(xmlText) {
+        function parseXML(text) {
             const parser = new DOMParser();
-            const doc = parser.parseFromString(xmlText, "text/xml");
-            const sprites = Array.from(doc.querySelectorAll('sprite')).map(s => ({
-                name: s.getAttribute('n'),
-                x: parseInt(s.getAttribute('x')),
-                y: parseInt(s.getAttribute('y')),
-                w: parseInt(s.getAttribute('w')),
-                h: parseInt(s.getAttribute('h')),
-                oX: parseInt(s.getAttribute('oX') || 0),
-                oY: parseInt(s.getAttribute('oY') || 0),
-                oW: parseInt(s.getAttribute('oW') || 0),
-                oH: parseInt(s.getAttribute('oH') || 0),
-                pX: parseFloat(s.getAttribute('pX') || 0.5),
-                pY: parseFloat(s.getAttribute('pY') || 0.5)
-            }));
-            return sprites.sort((a,b) => a.name.localeCompare(b.name));
+            const xml = parser.parseFromString(text, "text/xml");
+            const sprites = [];
+            xml.querySelectorAll("sprite").forEach(s => {
+                sprites.push({
+                    name: s.getAttribute("n"),
+                    x: parseInt(s.getAttribute("x")),
+                    y: parseInt(s.getAttribute("y")),
+                    w: parseInt(s.getAttribute("w")),
+                    h: parseInt(s.getAttribute("h")),
+                    oX: parseInt(s.getAttribute("oX") || 0),
+                    oY: parseInt(s.getAttribute("oY") || 0),
+                    oW: parseInt(s.getAttribute("oW") || 0),
+                    oH: parseInt(s.getAttribute("oH") || 0),
+                    pX: parseFloat(s.getAttribute("pX") || 0.5),
+                    pY: parseFloat(s.getAttribute("pY") || 0.5)
+                });
+            });
+            return sprites.sort((a, b) => a.name.localeCompare(b.name));
         }
 
-        function tint(img, color) {
-            const c = document.createElement('canvas');
-            c.width = img.width; c.height = img.height;
-            const ctx = c.getContext('2d');
+        function tintImage(img, color) {
+            const canvas = document.createElement("canvas");
+            canvas.width = img.width; canvas.height = img.height;
+            const ctx = canvas.getContext("2d");
             ctx.drawImage(img, 0, 0);
-            ctx.globalCompositeOperation = 'multiply';
+            ctx.globalCompositeOperation = "multiply";
             ctx.fillStyle = `rgb(${color.r},${color.g},${color.b})`;
-            ctx.fillRect(0,0,c.width,c.height);
-            ctx.globalCompositeOperation = 'destination-atop';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.globalCompositeOperation = "destination-atop";
             ctx.drawImage(img, 0, 0);
-            return c;
-        }
-
-        function getPos(pivotX, pivotY, s) {
-            if (!s) return [0,0];
-            return [
-                pivotX - (s.pX * s.oW - s.oX),
-                pivotY - (s.pY * s.oH - s.oY)
-            ];
-        }
-
-        function crop(img, x,y,w,h) {
-            const c = document.createElement('canvas');
-            c.width = w; c.height = h;
-            c.getContext('2d').drawImage(img, x,y,w,h, 0,0,w,h);
-            return c;
-        }
-
-        function rotate(img, deg) {
-            const rad = deg * Math.PI / 180;
-            const s = Math.abs(Math.sin(rad)), c = Math.abs(Math.cos(rad));
-            const canvas = document.createElement('canvas');
-            canvas.width = img.width * c + img.height * s;
-            canvas.height = img.width * s + img.height * c;
-            const ctx = canvas.getContext('2d');
-            ctx.translate(canvas.width/2, canvas.height/2);
-            ctx.rotate(rad);
-            ctx.drawImage(img, -img.width/2, -img.height/2);
             return canvas;
         }
 
-        function montarFrame(idx = 0) {
-            if (!loadedAssets.body?.sprites?.length) return null;
+        function calcularPosicao(pivotX, pivotY, sprite) {
+            if (!sprite) return [0, 0];
+            const posX = pivotX - (sprite.pX * sprite.oW - sprite.oX);
+            const posY = pivotY - (sprite.pY * sprite.oH - sprite.oY);
+            return [posX, posY];
+        }
 
-            const bodyS = loadedAssets.body.sprites[idx] || loadedAssets.body.sprites[0];
-            const pivot = [bodyS.pX * bodyS.oW, bodyS.pY * bodyS.oH];
+        function montarFrame(frameIndex) {
+            if (!data.body || !data.body.sprites || data.body.sprites.length === 0) return null;
+            const bodySprite = data.body.sprites[frameIndex] || data.body.sprites[0];
+            const pivotX = bodySprite.pX * bodySprite.oW;
+            const pivotY = bodySprite.pY * bodySprite.oH;
 
-            let bodyImg = loadedAssets.body.img;
-            if (bodyTint.r !== 255 || bodyTint.g !== 255 || bodyTint.b !== 255) {
-                bodyImg = tint(bodyImg, bodyTint);
+            let bodyImg = data.body.img;
+            if (bodyColor.r !== 255 || bodyColor.g !== 255 || bodyColor.b !== 255) {
+                bodyImg = tintImage(bodyImg, bodyColor);
             }
+            const bodyCrop = cropImage(bodyImg, bodySprite.x, bodySprite.y, bodySprite.w, bodySprite.h);
+            const bodyPos = calcularPosicao(pivotX, pivotY, bodySprite);
 
-            const crops = [];
-            crops.push({
-                img: crop(bodyImg, bodyS.x, bodyS.y, bodyS.w, bodyS.h),
-                pos: getPos(...pivot, bodyS),
-                key: 'body'
-            });
+            const crops = [{ img: bodyCrop, pos: bodyPos, key: 'body' }];
 
-            ['armor','amuleto','pet','head'].forEach(k => {
-                const layer = loadedAssets[k];
-                if (layer?.sprites?.length) {
-                    const s = layer.sprites[Math.min(idx, layer.sprites.length-1)] || layer.sprites[0];
-                    crops.push({
-                        img: crop(layer.img, s.x,s.y,s.w,s.h),
-                        pos: getPos(...pivot, s),
-                        key: k
-                    });
+            ['armor', 'amuleto', 'pet', 'head'].forEach(key => {
+                if (data[key] && data[key].sprites && data[key].sprites.length > 0) {
+                    const sIndex = Math.min(frameIndex, data[key].sprites.length - 1);
+                    const s = data[key].sprites[sIndex];
+                    const crop = cropImage(data[key].img, s.x, s.y, s.w, s.h);
+                    const pos = calcularPosicao(pivotX, pivotY, s);
+                    crops.push({ img: crop, pos, key });
                 }
             });
 
-            if (loadedAssets.eye?.sprites?.length) {
-                const s = loadedAssets.eye.sprites[Math.min(idx, loadedAssets.eye.sprites.length-1)] || loadedAssets.eye.sprites[0];
-                let eyeImg = crop(loadedAssets.eye.img, s.x,s.y,s.w,s.h);
-                if (eyeTint.r !== 255 || eyeTint.g !== 255 || eyeTint.b !== 255) {
-                    eyeImg = tint(eyeImg, eyeTint);
+            if (data.eye && data.eye.sprites && data.eye.sprites.length > 0) {
+                const s = data.eye.sprites[Math.min(frameIndex, data.eye.sprites.length - 1)];
+                let eyeCrop = cropImage(data.eye.img, s.x, s.y, s.w, s.h);
+                if (eyeColor.r !== 255 || eyeColor.g !== 255 || eyeColor.b !== 255) {
+                    eyeCrop = tintImage(eyeCrop, eyeColor);
                 }
-                crops.push({ img: eyeImg, pos: getPos(...pivot, s), key: 'eye' });
+                const pos = calcularPosicao(pivotX, pivotY, s);
+                crops.push({ img: eyeCrop, pos, key: 'eye' });
             }
 
-            if (loadedAssets.weapon) {
-                const wImg = rotate(loadedAssets.weapon.img, loadedAssets.weapon.angle || 0);
-                const off = loadedAssets.weapon.offset || [0,0];
-                crops.push({
-                    img: wImg,
-                    pos: [pivot[0] + off[0] - wImg.width/2, pivot[1] + off[1] - wImg.height/2],
-                    key: 'weapon'
-                });
+            if (data.weapon) {
+                const weaponImg = rotateImage(data.weapon.img, data.weapon.angle || 0);
+                const pos = [pivotX + (data.weapon.offset?.[0] || 0) - weaponImg.width / 2,
+                             pivotY + (data.weapon.offset?.[1] || 0) - weaponImg.height / 2];
+                crops.push({ img: weaponImg, pos, key: 'weapon' });
             }
 
-            let minX=Infinity, minY=Infinity, maxX=-Infinity, maxY=-Infinity;
+            let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
             crops.forEach(c => {
                 minX = Math.min(minX, c.pos[0]);
                 minY = Math.min(minY, c.pos[1]);
@@ -304,93 +371,117 @@
                 maxY = Math.max(maxY, c.pos[1] + c.img.height);
             });
 
-            const canvas = document.createElement('canvas');
-            canvas.width = Math.max(1, Math.ceil(maxX - minX));
-            canvas.height = Math.max(1, Math.ceil(maxY - minY));
-            const ctx = canvas.getContext('2d');
+            const canvas = document.createElement("canvas");
+            canvas.width = Math.ceil(maxX - minX) || 1;
+            canvas.height = Math.ceil(maxY - minY) || 1;
+            const ctx = canvas.getContext("2d");
 
-            ['weapon','body','armor','amuleto','pet','head'].forEach(k => {
-                const c = crops.find(cc => cc.key === k);
+            const order = ['weapon', 'body', 'armor', 'amuleto', 'pet', 'head'];
+            order.forEach(k => {
+                const c = crops.find(crop => crop.key === k);
                 if (c) ctx.drawImage(c.img, c.pos[0] - minX, c.pos[1] - minY);
             });
 
-            const eyeLayer = crops.find(c => c.key === 'eye');
-            if (eyeLayer) {
+            const eye = crops.find(c => c.key === 'eye');
+            if (eye) {
                 ctx.globalCompositeOperation = 'lighter';
-                ctx.drawImage(eyeLayer.img, eyeLayer.pos[0] - minX, eyeLayer.pos[1] - minY);
-                ctx.globalCompositeOperation = 'source-over';
+                ctx.drawImage(eye.img, eye.pos[0] - minX, eye.pos[1] - minY);
             }
 
             return canvas;
         }
 
+        function cropImage(img, x, y, w, h) {
+            const canvas = document.createElement("canvas");
+            canvas.width = w; canvas.height = h;
+            const ctx = canvas.getContext("2d");
+            ctx.drawImage(img, x, y, w, h, 0, 0, w, h);
+            return canvas;
+        }
+
+        function rotateImage(img, angle) {
+            const rad = angle * Math.PI / 180;
+            const sin = Math.abs(Math.sin(rad));
+            const cos = Math.abs(Math.cos(rad));
+            const canvas = document.createElement("canvas");
+            canvas.width = img.width * cos + img.height * sin;
+            canvas.height = img.width * sin + img.height * cos;
+            const ctx = canvas.getContext("2d");
+            ctx.translate(canvas.width / 2, canvas.height / 2);
+            ctx.rotate(rad);
+            ctx.drawImage(img, -img.width / 2, -img.height / 2);
+            return canvas;
+        }
+
         async function updatePreview() {
-            bodyTint = hexToRgb(document.getElementById('bodyColor').value);
-            eyeTint = hexToRgb(document.getElementById('eyeColor').value);
-            const cv = montarFrame(0);
-            if (cv) {
+            bodyColor = hexToRgb(document.getElementById('bodyColor').value);
+            eyeColor = hexToRgb(document.getElementById('eyeColor').value);
+            const canvas = montarFrame(0);
+            if (canvas) {
                 const prev = document.getElementById('preview');
-                prev.width = cv.width;
-                prev.height = cv.height;
-                prev.getContext('2d').drawImage(cv, 0, 0);
-                document.getElementById('status').textContent = 'Preview ok';
+                prev.width = canvas.width;
+                prev.height = canvas.height;
+                prev.getContext("2d").drawImage(canvas, 0, 0);
+                document.getElementById('status').innerText = 'Preview atualizado!';
             } else {
-                document.getElementById('status').textContent = 'Selecione corpo + armadura válida';
+                document.getElementById('status').innerText = 'Selecione um corpo primeiro.';
             }
         }
 
         async function generateAll() {
-            if (!loadedAssets.body?.sprites?.length) {
-                document.getElementById('status').textContent = 'Selecione um corpo primeiro';
+            if (!data.body || !data.body.sprites) {
+                document.getElementById('status').innerText = 'Selecione um corpo primeiro.';
                 return;
             }
             const zip = new JSZip();
-            const total = loadedAssets.body.sprites.length;
+            const total = data.body.sprites.length;
+            document.getElementById('status').innerText = 'Gerando ZIP...';
             for (let i = 0; i < total; i++) {
-                const cv = montarFrame(i);
-                if (cv) {
-                    const blob = await new Promise(r => cv.toBlob(r, 'image/png'));
-                    zip.file(loadedAssets.body.sprites[i].name.replace(/[^a-z0-9]/gi,'_') + '.png', blob);
-                }
+                const canvas = montarFrame(i);
+                const blob = await new Promise(r => canvas.toBlob(r));
+                zip.file(`${data.body.sprites[i].name.replace(/[\\/]/g, '_')}.png`, blob);
             }
-            const blob = await zip.generateAsync({type:'blob'});
-            saveAs(blob, 'MagicRampage_Character.zip');
-            document.getElementById('status').textContent = 'ZIP baixado!';
+            const content = await zip.generateAsync({type: 'blob'});
+            saveAs(content, 'Personagem_MagicRampage.zip');
+            document.getElementById('status').innerText = 'ZIP gerado e baixado!';
         }
 
         function hexToRgb(hex) {
-            const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
-            return result ? {
-                r: parseInt(result[1], 16),
-                g: parseInt(result[2], 16),
-                b: parseInt(result[3], 16)
-            } : {r:255,g:255,b:255};
+            const r = parseInt(hex.slice(1,3),16);
+            const g = parseInt(hex.slice(3,5),16);
+            const b = parseInt(hex.slice(5,7),16);
+            return {r, g, b};
         }
 
-        window.onload = async () => {
+        async function loadCatalog() {
             try {
-                const res = await fetch('catalog.json');
-                catalogData = await res.json();
+                const res = await fetch(basePath + 'catalog.json');
+                if (!res.ok) throw new Error();
+                catalog = await res.json();
 
-                createCatalog('bodyCatalog', catalogData.body || [], folders.body);
-                createCatalog('amuletoCatalog', catalogData.amuleto || [], folders.amuleto);
-                createCatalog('petCatalog', catalogData.pet || [], folders.pet);
-                createCatalog('headCatalog', catalogData.head || [], folders.head);
-                createCatalog('eyeCatalog', catalogData.eye || [], folders.eye);
-                createCatalog('weaponCatalog', catalogData.weapon || [], folders.weapon, true);
+                const armorList = [];
 
-                // Armaduras especiais
-                const armorItems = [];
-                (catalogData.armor?.folders || []).forEach(n => armorItems.push(n));
-                (catalogData.armor?.single || []).forEach(n => armorItems.push(n));
-                createCatalog('armorCatalog', armorItems, folders.armor);
+                catalog.armor.folders.forEach(name => armorList.push({name, type: 'folder', display: name}));
+                catalog.armor.single.forEach(name => armorList.push({name, type: 'single', display: name.replace(/_/g, ' ')}));
 
-                document.getElementById('status').textContent = 'Catálogo pronto. Selecione um corpo.';
-            } catch (err) {
-                document.getElementById('status').textContent = 'Erro ao carregar catálogo';
-                console.error(err);
+                armorList.sort((a,b) => a.display.localeCompare(b.display));
+
+                createCatalog('bodyCatalog', catalog.body.map(n=>({name:n})), folders.body);
+                createCatalog('armorCatalog', armorList, folders.armor);
+                createCatalog('amuletoCatalog', catalog.amuleto.map(n=>({name:n})), folders.amuleto);
+                createCatalog('petCatalog', catalog.pet.map(n=>({name:n})), folders.pet);
+                createCatalog('headCatalog', catalog.head.map(n=>({name:n})), folders.head);
+                createCatalog('eyeCatalog', catalog.eye.map(n=>({name:n})), folders.eye);
+                createCatalog('weaponCatalog', catalog.weapon.map(n=>({name:n})), folders.weapon, true);
+
+                document.getElementById('status').innerText = 'Catálogo carregado! Selecione as imagens.';
+            } catch (e) {
+                console.error(e);
+                document.getElementById('status').innerText = 'Erro ao carregar catalog.json';
             }
-        };
+        }
+
+        window.onload = loadCatalog;
     </script>
 </body>
 </html>
