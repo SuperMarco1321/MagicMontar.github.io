@@ -108,7 +108,9 @@
                 };
                 const img = document.createElement('img');
                 if (catId === 'armorCatalog' && entry.type === 'folder') {
+                    // Usa cache ou placeholder enquanto carrega
                     img.src = folderPreviews[entry.name] || 'https://placehold.it/100x100?text=Carregando...';
+                    // Carrega preview se ainda não tiver
                     if (!folderPreviews[entry.name]) {
                         loadFolderPreview(entry.name, img);
                     }
@@ -125,12 +127,22 @@
         }
 
         async function loadFolderPreview(folderName, imgElement) {
-            const normalizedName = folderName.replace(/\s/g, '');
-            const previewPng = `${normalizedName}.png`; // Assumindo PNG com elmo para preview
-            const previewUrl = basePath + `${folders.armor}/Png/${folderName}/${previewPng}`;
-            imgElement.src = previewUrl;
-            imgElement.onerror = () => imgElement.src = 'https://placehold.it/100x100?text=Sem+Preview';
-            folderPreviews[folderName] = previewUrl;
+            const repo = 'SuperMarco1321/MagicMontar.github.io';
+            const apiUrl = `https://api.github.com/repos/${repo}/contents/${folders.armor}/Png/${folderName}`;
+            try {
+                const res = await fetch(apiUrl);
+                if (!res.ok) throw new Error();
+                const files = await res.json();
+                const pngFiles = files.filter(f => f.name.toLowerCase().endsWith('.png')).map(f => f.name).sort((a,b) => a.localeCompare(b));
+                if (pngFiles.length > 0) {
+                    const firstPng = pngFiles[0];
+                    const previewUrl = basePath + `${folders.armor}/Png/${folderName}/${firstPng}`;
+                    folderPreviews[folderName] = previewUrl;
+                    imgElement.src = previewUrl;
+                }
+            } catch (e) {
+                imgElement.src = 'https://placehold.it/100x100?text=Sem+Preview';
+            }
         }
 
         async function loadArmor(name, type) {
@@ -142,171 +154,98 @@
                 xmlUrl = `${folders.armor}/Xml/${name}.xml`;
                 helmetToggle.classList.add('disabled');
             } else {
-                const normalizedName = name.replace(/\s/g, '');
-                const helmetSuffix = withHelmet ? '' : 'NoHelmet';
-                const selectedPng = `${normalizedName}${helmetSuffix}.png`;
-                pngUrl = `${folders.armor}/Png/${name}/${selectedPng}`;
-                const baseName = `${normalizedName}${helmetSuffix}`;
-                xmlUrl = `${folders.armor}/Xml/${baseName}.xml`; // XML com nome da imagem
-            }
-
-            const fullPng = basePath + pngUrl;
-
-            const img = new Image();
-            img.crossOrigin = 'anonymous';
-            img.src = fullPng;
-            try {
-                await new Promise((resolve, reject) => {
-                    img.onload = resolve;
-                    img.onerror = reject;
-                });
-            } catch {
-                document.getElementById('status').innerText = 'Erro ao carregar PNG da armadura.';
-                return;
-            }
-
-            data.armor = { img };
-
-            let sprites = [];
-            if (xmlUrl) {
-                const fullXml = basePath + xmlUrl;
+                const repo = 'SuperMarco1321/MagicMontar.github.io';
+                const apiUrl = `https://api.github.com/repos/${repo}/contents/${folders.armor}/Png/${name}`;
                 try {
-                    const xmlText = await fetch(fullXml).then(r => {
-                        if (!r.ok) throw new Error();
-                        return r.text();
-                    });
-                    sprites = parseXML(xmlText);
-                    console.log(`XML carregado: ${xmlUrl}`);
-                } catch (err) {
-                    console.warn(`XML principal não encontrado: ${xmlUrl}`);
-                    // Fallback para XML com nome da pasta (sem suffix)
-                    const fallbackXmlUrl = `${folders.armor}/Xml/${normalizedName || name}.xml`;
-                    const fullFallback = basePath + fallbackXmlUrl;
-                    try {
-                        const xmlTextFallback = await fetch(fullFallback).then(r => {
-                            if (!r.ok) throw new Error();
-                            return r.text();
-                        });
-                        sprites = parseXML(xmlTextFallback);
-                        console.log(`Fallback XML usado: ${fallbackXmlUrl}`);
-                    } catch {
-                        console.warn('Nenhum XML encontrado para armadura.');
-                    }
-                }
-            }
-
-            if (sprites.length === 0) {
-                sprites = [{
-                    name: 'default',
-                    x: 0,
-                    y: 0,
-                    w: img.width,
-                    h: img.height,
-                    oX: 0,
-                    oY: 0,
-                    oW: img.width,
-                    oH: img.height,
-                    pX: 0.5,
-                    pY: 0.5
-                }];
-                document.getElementById('status').innerText = 'Armadura carregada como imagem estática (sem XML).';
-            }
-
-            data.armor.sprites = sprites;
-
-            updatePreview();
-        }
-
-        async function loadAsset(type, name, folder, isWeapon = false) {
-            const pngUrl = basePath + `${folder}/Png/${name}.png`;
-            const xmlUrl = isWeapon ? null : basePath + `${folder}/Xml/${name}.xml`;
-
-            const img = new Image();
-            img.crossOrigin = 'anonymous';
-            img.src = pngUrl;
-            try {
-                await new Promise((resolve, reject) => {
-                    img.onload = resolve;
-                    img.onerror = reject;
-                });
-            } catch {
-                document.getElementById('status').innerText = `Erro ao carregar PNG para ${type}.`;
-                return;
-            }
-
-            data[type] = { img };
-
-            let sprites = [];
-            if (!isWeapon && xmlUrl) {
-                try {
-                    const xmlText = await fetch(xmlUrl).then(r => r.ok ? r.text() : Promise.reject());
-                    sprites = parseXML(xmlText);
+                    const res = await fetch(apiUrl);
+                    if (!res.ok) throw new Error();
+                    const files = await res.json();
+                    const pngFiles = files.filter(f => f.name.toLowerCase().endsWith('.png')).map(f => f.name).sort((a,b) => a.localeCompare(b));
+                    if (pngFiles.length === 0) throw new Error('Sem PNG');
+                    const index = withHelmet ? 0 : Math.min(1, pngFiles.length - 1);
+                    const selectedPng = pngFiles[index];
+                    const baseName = selectedPng.replace('.png', '');
+                    pngUrl = `${folders.armor}/Png/${name}/${selectedPng}`;
+                    xmlUrl = `${folders.armor}/Xml/${name}/${baseName}.xml`;
+                    if (pngFiles.length < 2) helmetToggle.classList.add('disabled');
                 } catch (e) {
-                    console.warn(`XML não encontrado para ${name}: ${e}`);
+                    console.error('Erro ao carregar pasta de armadura:', e);
+                    document.getElementById('status').innerText = 'Erro ao carregar armadura.';
+                    return;
                 }
             }
 
-            if (sprites.length === 0) {
-                sprites = [{
-                    name: 'default',
-                    x: 0,
-                    y: 0,
-                    w: img.width,
-                    h: img.height,
-                    oX: 0,
-                    oY: 0,
-                    oW: img.width,
-                    oH: img.height,
-                    pX: 0.5,
-                    pY: 0.5
-                }];
-            }
+            // Carregar diretamente para data.armor com caminhos corretos (correção principal)
+            data.armor = {img: new Image(), sprites: []};
+            data.armor.img.src = basePath + pngUrl;
+            data.armor.img.onload = () => updatePreview();
 
-            data[type].sprites = sprites;
-
-            if (isWeapon) {
-                const angulosPath = basePath + `${folder}/Angulos.txt`;
-                try {
-                    const txt = await fetch(angulosPath).then(r => r.ok ? r.text() : Promise.reject());
-                    const bloco = txt.match(new RegExp(`\\{[^}]*sprite\\s*=\\s*${name};[^}]*\\}`, 's'));
-                    if (bloco) {
-                        const angle = bloco[0].match(/equippedAngle\\s*=\\s*([-\\d.]+)/);
-                        const ox = bloco[0].match(/equipOffsetX\\s*=\\s*([-\\d]+)/);
-                        const oy = bloco[0].match(/equipOffsetY\\s*=\\s*([-\\d]+)/);
-                        data[type].angle = angle ? parseFloat(angle[1]) : 0;
-                        data[type].offset = [ox ? parseInt(ox[1]) : 0, oy ? parseInt(oy[1]) : 0];
-                    }
-                } catch {}
-            }
-
-            updatePreview();
+            fetch(basePath + xmlUrl)
+                .then(res => {
+                    if (!res.ok) throw new Error('XML não encontrado');
+                    return res.text();
+                })
+                .then(xml => {
+                    const parser = new DOMParser();
+                    const doc = parser.parseFromString(xml, "text/xml");
+                    data.armor.sprites = Array.from(doc.getElementsByTagName('sprite')).map(s => ({
+                        name: s.getAttribute('n'),
+                        x: parseInt(s.getAttribute('x')),
+                        y: parseInt(s.getAttribute('y')),
+                        w: parseInt(s.getAttribute('w')),
+                        h: parseInt(s.getAttribute('h')),
+                        oX: parseInt(s.getAttribute('oX') || 0),
+                        oY: parseInt(s.getAttribute('oY') || 0),
+                        oW: parseInt(s.getAttribute('oW') || 0),
+                        oH: parseInt(s.getAttribute('oH') || 0),
+                        pX: parseFloat(s.getAttribute('pX') || 0.5),
+                        pY: parseFloat(s.getAttribute('pY') || 0.5)
+                    }));
+                    updatePreview();
+                })
+                .catch(e => {
+                    console.error('Erro ao carregar XML de armadura:', e);
+                    document.getElementById('status').innerText = 'Erro ao carregar XML de armadura.';
+                });
         }
 
-        function parseXML(text) {
-            const parser = new DOMParser();
-            const xml = parser.parseFromString(text, "text/xml");
-            const sprites = [];
-            xml.querySelectorAll("sprite").forEach(s => {
-                sprites.push({
-                    name: s.getAttribute("n"),
-                    x: parseInt(s.getAttribute("x")),
-                    y: parseInt(s.getAttribute("y")),
-                    w: parseInt(s.getAttribute("w")),
-                    h: parseInt(s.getAttribute("h")),
-                    oX: parseInt(s.getAttribute("oX") || 0),
-                    oY: parseInt(s.getAttribute("oY") || 0),
-                    oW: parseInt(s.getAttribute("oW") || 0),
-                    oH: parseInt(s.getAttribute("oH") || 0),
-                    pX: parseFloat(s.getAttribute("pX") || 0.5),
-                    pY: parseFloat(s.getAttribute("pY") || 0.5)
-                });
-            });
-            return sprites.sort((a, b) => a.name.localeCompare(b.name));
+        function loadAsset(key, name, folder, isWeapon = false) {
+            data[key] = {img: new Image(), sprites: []};
+            data[key].img.src = basePath + `${folder}/Png/${name}.png`;
+            data[key].img.onload = () => updatePreview();
+            if (!isWeapon) {
+                fetch(basePath + `${folder}/Xml/${name}.xml`)
+                    .then(res => res.text())
+                    .then(xml => {
+                        const parser = new DOMParser();
+                        const doc = parser.parseFromString(xml, "text/xml");
+                        data[key].sprites = Array.from(doc.getElementsByTagName('sprite')).map(s => ({
+                            name: s.getAttribute('n'),
+                            x: parseInt(s.getAttribute('x')),
+                            y: parseInt(s.getAttribute('y')),
+                            w: parseInt(s.getAttribute('w')),
+                            h: parseInt(s.getAttribute('h')),
+                            oX: parseInt(s.getAttribute('oX') || 0),
+                            oY: parseInt(s.getAttribute('oY') || 0),
+                            oW: parseInt(s.getAttribute('oW') || 0),
+                            oH: parseInt(s.getAttribute('oH') || 0),
+                            pX: parseFloat(s.getAttribute('pX') || 0.5),
+                            pY: parseFloat(s.getAttribute('pY') || 0.5)
+                        }));
+                        updatePreview();
+                    })
+                    .catch(e => console.error('Erro XML:', e));
+            } else {
+                // Para armas, carregar ângulo e offset se disponível (melhoria opcional)
+                data[key].angle = 0; // Pode ser carregado de um arquivo de config
+                data[key].offset = [0, 0];
+            }
         }
 
         function tintImage(img, color) {
             const canvas = document.createElement("canvas");
-            canvas.width = img.width; canvas.height = img.height;
+            canvas.width = img.width;
+            canvas.height = img.height;
             const ctx = canvas.getContext("2d");
             ctx.drawImage(img, 0, 0);
             ctx.globalCompositeOperation = "multiply";
