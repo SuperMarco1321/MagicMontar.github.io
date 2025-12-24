@@ -79,14 +79,13 @@
         let bodyColor = {r: 255, g: 255, b: 255};
         let eyeColor = {r: 255, g: 255, b: 255};
         let withHelmet = true;
-        let folderPreviews = {}; // cache dos primeiros PNG de cada pasta
 
         const helmetToggle = document.getElementById('helmetToggle');
         helmetToggle.onclick = () => {
             if (helmetToggle.classList.contains('disabled')) return;
             withHelmet = !withHelmet;
             helmetToggle.textContent = withHelmet ? 'Com Elmo' : 'Sem Elmo';
-            if (selected.armor) loadArmor(selected.armor.name, selected.armor.type);
+            if (selected.armor) loadArmor(selected.armor);
         };
 
         function createCatalog(catId, list, folder, isWeapon = false) {
@@ -100,7 +99,7 @@
                     div.classList.add('selected');
                     if (catId === 'armorCatalog') {
                         selected.armor = entry;
-                        loadArmor(entry.name, entry.type);
+                        loadArmor(entry);
                     } else {
                         selected[catId.replace('Catalog', '')] = entry.name;
                         loadAsset(catId.replace('Catalog', ''), entry.name, folder, isWeapon);
@@ -108,12 +107,7 @@
                 };
                 const img = document.createElement('img');
                 if (catId === 'armorCatalog' && entry.type === 'folder') {
-                    // Usa cache ou placeholder enquanto carrega
-                    img.src = folderPreviews[entry.name] || 'https://placehold.it/100x100?text=Carregando...';
-                    // Carrega preview se ainda não tiver
-                    if (!folderPreviews[entry.name]) {
-                        loadFolderPreview(entry.name, img);
-                    }
+                    img.src = basePath + `${folders.armor}/Png/${entry.name}/${entry.with_helmet}.png`;
                 } else {
                     img.src = basePath + `${folder}/Png/${entry.name}.png`;
                 }
@@ -126,56 +120,24 @@
             });
         }
 
-        async function loadFolderPreview(folderName, imgElement) {
-            const repo = 'SuperMarco1321/MagicMontar.github.io';
-            const apiUrl = `https://api.github.com/repos/${repo}/contents/${folders.armor}/Png/${folderName}`;
-            try {
-                const res = await fetch(apiUrl);
-                if (!res.ok) throw new Error();
-                const files = await res.json();
-                const pngFiles = files.filter(f => f.name.toLowerCase().endsWith('.png')).map(f => f.name).sort((a,b) => a.localeCompare(b));
-                if (pngFiles.length > 0) {
-                    const firstPng = pngFiles[0];
-                    const previewUrl = basePath + `${folders.armor}/Png/${folderName}/${firstPng}`;
-                    folderPreviews[folderName] = previewUrl;
-                    imgElement.src = previewUrl;
-                }
-            } catch (e) {
-                imgElement.src = 'https://placehold.it/100x100?text=Sem+Preview';
-            }
-        }
-
-        async function loadArmor(name, type) {
+        async function loadArmor(entry) {
             helmetToggle.classList.remove('disabled');
-            let pngUrl, xmlUrl;
+            let pngUrl, xmlUrl, baseName;
 
-            if (type === 'single') {
-                pngUrl = `${folders.armor}/Png/${name}.png`;
-                xmlUrl = `${folders.armor}/Xml/${name}.xml`;
+            if (entry.type === 'single') {
+                baseName = entry.name;
+                pngUrl = `${folders.armor}/Png/${baseName}.png`;
+                xmlUrl = `${folders.armor}/Xml/${baseName}.xml`;
                 helmetToggle.classList.add('disabled');
-            } else {
-                const repo = 'SuperMarco1321/MagicMontar.github.io';
-                const apiUrl = `https://api.github.com/repos/${repo}/contents/${folders.armor}/Png/${name}`;
-                try {
-                    const res = await fetch(apiUrl);
-                    if (!res.ok) throw new Error();
-                    const files = await res.json();
-                    const pngFiles = files.filter(f => f.name.toLowerCase().endsWith('.png')).map(f => f.name).sort((a,b) => a.localeCompare(b));
-                    if (pngFiles.length === 0) throw new Error('Sem PNG');
-                    const index = withHelmet ? 0 : Math.min(1, pngFiles.length - 1);
-                    const selectedPng = pngFiles[index];
-                    const baseName = selectedPng.replace('.png', '');
-                    pngUrl = `${folders.armor}/Png/${name}/${selectedPng}`;
-                    xmlUrl = `${folders.armor}/Xml/${name}/${baseName}.xml`;
-                    if (pngFiles.length < 2) helmetToggle.classList.add('disabled');
-                } catch (e) {
-                    console.error('Erro ao carregar pasta de armadura:', e);
-                    document.getElementById('status').innerText = 'Erro ao carregar armadura.';
-                    return;
+            } else { // folder
+                baseName = withHelmet ? entry.with_helmet : entry.without_helmet;
+                pngUrl = `${folders.armor}/Png/${entry.name}/${baseName}.png`;
+                xmlUrl = `${folders.armor}/Xml/${entry.name}/${baseName}.xml`;
+                if (entry.with_helmet === entry.without_helmet) {
+                    helmetToggle.classList.add('disabled');
                 }
             }
 
-            // Carregar diretamente para data.armor com caminhos corretos (correção principal)
             data.armor = {img: new Image(), sprites: []};
             data.armor.img.src = basePath + pngUrl;
             data.armor.img.onload = () => updatePreview();
@@ -402,8 +364,22 @@
 
                 const armorList = [];
 
-                catalog.armor.folders.forEach(name => armorList.push({name, type: 'folder', display: name}));
-                catalog.armor.single.forEach(name => armorList.push({name, type: 'single', display: name.replace(/_/g, ' ')}));
+                catalog.armor.folders.forEach(folder => {
+                    armorList.push({
+                        name: folder.name,
+                        type: 'folder',
+                        display: folder.name,
+                        with_helmet: folder.with_helmet,
+                        without_helmet: folder.without_helmet
+                    });
+                });
+                catalog.armor.single.forEach(name => {
+                    armorList.push({
+                        name: name,
+                        type: 'single',
+                        display: name.replace(/_/g, ' ')
+                    });
+                });
 
                 armorList.sort((a,b) => a.display.localeCompare(b.display));
 
