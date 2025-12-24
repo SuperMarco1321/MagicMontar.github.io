@@ -120,7 +120,14 @@
             });
         }
 
+        function tryUpdatePreview() {
+            if (data.armor && data.armor.img.complete && data.armor.sprites && data.armor.sprites.length > 0) {
+                updatePreview();
+            }
+        }
+
         async function loadArmor(entry) {
+            document.getElementById('status').innerText = 'Carregando armadura...';
             helmetToggle.classList.remove('disabled');
             let pngUrl, xmlUrl, baseName;
 
@@ -138,9 +145,17 @@
                 }
             }
 
-            data.armor = {img: new Image(), sprites: []};
+            // Reset armor data
+            data.armor = { img: new Image(), sprites: null, loaded: false };
+
             data.armor.img.src = basePath + pngUrl;
-            data.armor.img.onload = () => updatePreview();
+            data.armor.img.onload = () => {
+                data.armor.loaded = true;
+                tryUpdatePreview();
+            };
+            data.armor.img.onerror = () => {
+                document.getElementById('status').innerText = 'Erro ao carregar PNG da armadura.';
+            };
 
             fetch(basePath + xmlUrl)
                 .then(res => {
@@ -163,11 +178,12 @@
                         pX: parseFloat(s.getAttribute('pX') || 0.5),
                         pY: parseFloat(s.getAttribute('pY') || 0.5)
                     }));
-                    updatePreview();
+                    tryUpdatePreview();
                 })
                 .catch(e => {
                     console.error('Erro ao carregar XML de armadura:', e);
-                    document.getElementById('status').innerText = 'Erro ao carregar XML de armadura.';
+                    document.getElementById('status').innerText = 'Erro ao carregar XML da armadura.';
+                    data.armor.sprites = [];
                 });
         }
 
@@ -197,10 +213,6 @@
                         updatePreview();
                     })
                     .catch(e => console.error('Erro XML:', e));
-            } else {
-                // Para armas, carregar ângulo e offset se disponível (melhoria opcional)
-                data[key].angle = 0; // Pode ser carregado de um arquivo de config
-                data[key].offset = [0, 0];
             }
         }
 
@@ -316,7 +328,7 @@
             return canvas;
         }
 
-        async function updatePreview() {
+        function updatePreview() {
             bodyColor = hexToRgb(document.getElementById('bodyColor').value);
             eyeColor = hexToRgb(document.getElementById('eyeColor').value);
             const canvas = montarFrame(0);
@@ -338,10 +350,10 @@
             }
             const zip = new JSZip();
             const total = data.body.sprites.length;
-            document.getElementById('status').innerText = 'Gerando ZIP...';
+            document.getElementById('status').innerText = 'Gerando ZIP... (pode demorar)';
             for (let i = 0; i < total; i++) {
                 const canvas = montarFrame(i);
-                const blob = await new Promise(r => canvas.toBlob(r));
+                const blob = await canvas.toBlob();
                 zip.file(`${data.body.sprites[i].name.replace(/[\\/]/g, '_')}.png`, blob);
             }
             const content = await zip.generateAsync({type: 'blob'});
