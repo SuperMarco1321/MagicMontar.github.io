@@ -120,14 +120,7 @@
             });
         }
 
-        function tryUpdatePreview() {
-            if (data.armor && data.armor.img.complete && data.armor.sprites && data.armor.sprites.length > 0) {
-                updatePreview();
-            }
-        }
-
         async function loadArmor(entry) {
-            document.getElementById('status').innerText = 'Carregando armadura...';
             helmetToggle.classList.remove('disabled');
             let pngUrl, xmlUrl, baseName;
 
@@ -139,23 +132,15 @@
             } else { // folder
                 baseName = withHelmet ? entry.with_helmet : entry.without_helmet;
                 pngUrl = `${folders.armor}/Png/${entry.name}/${baseName}.png`;
-                xmlUrl = `${folders.armor}/Xml/${entry.name}/${baseName}.xml`;
+                xmlUrl = `${folders.armor}/Xml/${baseName}.xml`; // XMLs estão soltos na pasta Xml
                 if (entry.with_helmet === entry.without_helmet) {
                     helmetToggle.classList.add('disabled');
                 }
             }
 
-            // Reset armor data
-            data.armor = { img: new Image(), sprites: null, loaded: false };
-
+            data.armor = {img: new Image(), sprites: []};
             data.armor.img.src = basePath + pngUrl;
-            data.armor.img.onload = () => {
-                data.armor.loaded = true;
-                tryUpdatePreview();
-            };
-            data.armor.img.onerror = () => {
-                document.getElementById('status').innerText = 'Erro ao carregar PNG da armadura.';
-            };
+            data.armor.img.onload = () => updatePreview();
 
             fetch(basePath + xmlUrl)
                 .then(res => {
@@ -178,12 +163,11 @@
                         pX: parseFloat(s.getAttribute('pX') || 0.5),
                         pY: parseFloat(s.getAttribute('pY') || 0.5)
                     }));
-                    tryUpdatePreview();
+                    updatePreview();
                 })
                 .catch(e => {
                     console.error('Erro ao carregar XML de armadura:', e);
-                    document.getElementById('status').innerText = 'Erro ao carregar XML da armadura.';
-                    data.armor.sprites = [];
+                    document.getElementById('status').innerText = 'Erro ao carregar XML de armadura.';
                 });
         }
 
@@ -213,6 +197,10 @@
                         updatePreview();
                     })
                     .catch(e => console.error('Erro XML:', e));
+            } else {
+                // Para armas, carregar ângulo e offset se disponível (melhoria opcional)
+                data[key].angle = 0; // Pode ser carregado de um arquivo de config
+                data[key].offset = [0, 0];
             }
         }
 
@@ -328,7 +316,7 @@
             return canvas;
         }
 
-        function updatePreview() {
+        async function updatePreview() {
             bodyColor = hexToRgb(document.getElementById('bodyColor').value);
             eyeColor = hexToRgb(document.getElementById('eyeColor').value);
             const canvas = montarFrame(0);
@@ -350,10 +338,10 @@
             }
             const zip = new JSZip();
             const total = data.body.sprites.length;
-            document.getElementById('status').innerText = 'Gerando ZIP... (pode demorar)';
+            document.getElementById('status').innerText = 'Gerando ZIP...';
             for (let i = 0; i < total; i++) {
                 const canvas = montarFrame(i);
-                const blob = await canvas.toBlob();
+                const blob = await new Promise(r => canvas.toBlob(r));
                 zip.file(`${data.body.sprites[i].name.replace(/[\\/]/g, '_')}.png`, blob);
             }
             const content = await zip.generateAsync({type: 'blob'});
