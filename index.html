@@ -79,7 +79,7 @@
         let bodyColor = {r: 255, g: 255, b: 255};
         let eyeColor = {r: 255, g: 255, b: 255};
         let withHelmet = true;
-        let folderPreviews = {};
+        let folderPreviews = {}; // cache dos primeiros PNG de cada pasta
 
         const helmetToggle = document.getElementById('helmetToggle');
         helmetToggle.onclick = () => {
@@ -125,49 +125,29 @@
         }
 
         async function loadFolderPreview(folderName, imgElement) {
-            const repo = 'SuperMarco1321/MagicMontar.github.io';
-            const apiUrl = `https://api.github.com/repos/${repo}/contents/${folders.armor}/Png/${folderName}`;
-            try {
-                const res = await fetch(apiUrl);
-                if (!res.ok) throw new Error();
-                const files = await res.json();
-                const pngFiles = files.filter(f => f.name.toLowerCase().endsWith('.png')).map(f => f.name).sort((a,b) => a.localeCompare(b));
-                if (pngFiles.length > 0) {
-                    const firstPng = pngFiles[0];
-                    const previewUrl = basePath + `${folders.armor}/Png/${folderName}/${firstPng}`;
-                    folderPreviews[folderName] = previewUrl;
-                    imgElement.src = previewUrl;
-                }
-            } catch (e) {
-                imgElement.src = 'https://placehold.it/100x100?text=Sem+Preview';
-            }
+            const normalizedName = folderName.replace(/\s/g, '');
+            const previewPng = `${normalizedName}.png`; // Assumindo PNG com elmo para preview
+            const previewUrl = basePath + `${folders.armor}/Png/${folderName}/${previewPng}`;
+            imgElement.src = previewUrl;
+            imgElement.onerror = () => imgElement.src = 'https://placehold.it/100x100?text=Sem+Preview';
+            folderPreviews[folderName] = previewUrl;
         }
 
         async function loadArmor(name, type) {
             helmetToggle.classList.remove('disabled');
-            let pngUrl;
+            let pngUrl, xmlUrl;
 
             if (type === 'single') {
                 pngUrl = `${folders.armor}/Png/${name}.png`;
+                xmlUrl = `${folders.armor}/Xml/${name}.xml`;
                 helmetToggle.classList.add('disabled');
             } else {
-                const repo = 'SuperMarco1321/MagicMontar.github.io';
-                const apiUrl = `https://api.github.com/repos/${repo}/contents/${folders.armor}/Png/${name}`;
-                try {
-                    const res = await fetch(apiUrl);
-                    if (!res.ok) throw new Error();
-                    const files = await res.json();
-                    const pngFiles = files.filter(f => f.name.toLowerCase().endsWith('.png')).map(f => f.name).sort((a,b) => a.localeCompare(b));
-                    if (pngFiles.length === 0) throw new Error('Sem PNG');
-                    const index = withHelmet ? 0 : Math.min(1, pngFiles.length - 1);
-                    const selectedPng = pngFiles[index];
-                    pngUrl = `${folders.armor}/Png/${name}/${selectedPng}`;
-                    if (pngFiles.length < 2) helmetToggle.classList.add('disabled');
-                } catch (e) {
-                    console.error(e);
-                    document.getElementById('status').innerText = 'Erro ao carregar pasta de armadura.';
-                    return;
-                }
+                const normalizedName = name.replace(/\s/g, '');
+                const helmetSuffix = withHelmet ? '' : 'NoHelmet';
+                const selectedPng = `${normalizedName}${helmetSuffix}.png`;
+                pngUrl = `${folders.armor}/Png/${name}/${selectedPng}`;
+                const baseName = `${normalizedName}${helmetSuffix}`;
+                xmlUrl = `${folders.armor}/Xml/${baseName}.xml`; // XML com nome da imagem
             }
 
             const fullPng = basePath + pngUrl;
@@ -175,54 +155,91 @@
             const img = new Image();
             img.crossOrigin = 'anonymous';
             img.src = fullPng;
-            await new Promise((resolve, reject) => {
-                img.onload = resolve;
-                img.onerror = () => reject('Erro PNG');
-            });
+            try {
+                await new Promise((resolve, reject) => {
+                    img.onload = resolve;
+                    img.onerror = reject;
+                });
+            } catch {
+                document.getElementById('status').innerText = 'Erro ao carregar PNG da armadura.';
+                return;
+            }
 
             data.armor = { img };
 
-            // Para armaduras em folders, não há XML correspondente (todos XML na raiz para singles)
-            // Usamos imagem estática com sprite default
-            const defaultSprite = [{
-                name: 'default',
-                x: 0,
-                y: 0,
-                w: img.width,
-                h: img.height,
-                oX: 0,
-                oY: 0,
-                oW: img.width,
-                oH: img.height,
-                pX: 0.5,
-                pY: 0.5
-            }];
-            data.armor.sprites = defaultSprite;
+            let sprites = [];
+            if (xmlUrl) {
+                const fullXml = basePath + xmlUrl;
+                try {
+                    const xmlText = await fetch(fullXml).then(r => {
+                        if (!r.ok) throw new Error();
+                        return r.text();
+                    });
+                    sprites = parseXML(xmlText);
+                    console.log(`XML carregado: ${xmlUrl}`);
+                } catch (err) {
+                    console.warn(`XML principal não encontrado: ${xmlUrl}`);
+                    // Fallback para XML com nome da pasta (sem suffix)
+                    const fallbackXmlUrl = `${folders.armor}/Xml/${normalizedName || name}.xml`;
+                    const fullFallback = basePath + fallbackXmlUrl;
+                    try {
+                        const xmlTextFallback = await fetch(fullFallback).then(r => {
+                            if (!r.ok) throw new Error();
+                            return r.text();
+                        });
+                        sprites = parseXML(xmlTextFallback);
+                        console.log(`Fallback XML usado: ${fallbackXmlUrl}`);
+                    } catch {
+                        console.warn('Nenhum XML encontrado para armadura.');
+                    }
+                }
+            }
 
-            document.getElementById('status').innerText = 'Armadura carregada (imagem estática para sets em pasta).';
+            if (sprites.length === 0) {
+                sprites = [{
+                    name: 'default',
+                    x: 0,
+                    y: 0,
+                    w: img.width,
+                    h: img.height,
+                    oX: 0,
+                    oY: 0,
+                    oW: img.width,
+                    oH: img.height,
+                    pX: 0.5,
+                    pY: 0.5
+                }];
+                document.getElementById('status').innerText = 'Armadura carregada como imagem estática (sem XML).';
+            }
+
+            data.armor.sprites = sprites;
 
             updatePreview();
         }
 
-        async function loadAsset(type, name, folder, isWeapon) {
-            const pngUrl = `${folder}/Png/${name}.png`;
-            const xmlUrl = `${folder}/Xml/${name}.xml`;
+        async function loadAsset(type, name, folder, isWeapon = false) {
+            const pngUrl = basePath + `${folder}/Png/${name}.png`;
+            const xmlUrl = isWeapon ? null : basePath + `${folder}/Xml/${name}.xml`;
 
             const img = new Image();
             img.crossOrigin = 'anonymous';
-            img.src = basePath + pngUrl;
-            await new Promise((resolve, reject) => {
-                img.onload = resolve;
-                img.onerror = reject;
-            });
+            img.src = pngUrl;
+            try {
+                await new Promise((resolve, reject) => {
+                    img.onload = resolve;
+                    img.onerror = reject;
+                });
+            } catch {
+                document.getElementById('status').innerText = `Erro ao carregar PNG para ${type}.`;
+                return;
+            }
 
             data[type] = { img };
 
             let sprites = [];
-            if (!isWeapon) {
+            if (!isWeapon && xmlUrl) {
                 try {
-                    const fullXml = basePath + xmlUrl;
-                    const xmlText = await fetch(fullXml).then(r => r.ok ? r.text() : Promise.reject());
+                    const xmlText = await fetch(xmlUrl).then(r => r.ok ? r.text() : Promise.reject());
                     sprites = parseXML(xmlText);
                 } catch (e) {
                     console.warn(`XML não encontrado para ${name}: ${e}`);
@@ -247,16 +264,15 @@
 
             data[type].sprites = sprites;
 
-            // Para armas: extrair angle/offset se existir Angulos.txt
             if (isWeapon) {
+                const angulosPath = basePath + `${folder}/Angulos.txt`;
                 try {
-                    const angulosPath = basePath + `${folder}/Angulos.txt`;
                     const txt = await fetch(angulosPath).then(r => r.ok ? r.text() : Promise.reject());
                     const bloco = txt.match(new RegExp(`\\{[^}]*sprite\\s*=\\s*${name};[^}]*\\}`, 's'));
                     if (bloco) {
-                        const angle = bloco[0].match(/equippedAngle\s*=\s*([-\d.]+)/);
-                        const ox = bloco[0].match(/equipOffsetX\s*=\s*([-\d]+)/);
-                        const oy = bloco[0].match(/equipOffsetY\s*=\s*([-\d]+)/);
+                        const angle = bloco[0].match(/equippedAngle\\s*=\\s*([-\\d.]+)/);
+                        const ox = bloco[0].match(/equipOffsetX\\s*=\\s*([-\\d]+)/);
+                        const oy = bloco[0].match(/equipOffsetY\\s*=\\s*([-\\d]+)/);
                         data[type].angle = angle ? parseFloat(angle[1]) : 0;
                         data[type].offset = [ox ? parseInt(ox[1]) : 0, oy ? parseInt(oy[1]) : 0];
                     }
@@ -324,7 +340,7 @@
             const crops = [{ img: bodyCrop, pos: bodyPos, key: 'body' }];
 
             ['armor', 'amuleto', 'pet', 'head'].forEach(key => {
-                if (data[key] && data[key].img) {
+                if (data[key] && data[key].sprites && data[key].sprites.length > 0) {
                     const s = data[key].sprites[Math.min(frameIndex, data[key].sprites.length - 1)];
                     const crop = cropImage(data[key].img, s.x, s.y, s.w, s.h);
                     const pos = calcularPosicao(pivotX, pivotY, s);
@@ -332,7 +348,7 @@
                 }
             });
 
-            if (data.eye && data.eye.img) {
+            if (data.eye && data.eye.sprites && data.eye.sprites.length > 0) {
                 const s = data.eye.sprites[Math.min(frameIndex, data.eye.sprites.length - 1)];
                 let eyeCrop = cropImage(data.eye.img, s.x, s.y, s.w, s.h);
                 if (eyeColor.r !== 255 || eyeColor.g !== 255 || eyeColor.b !== 255) {
@@ -342,7 +358,7 @@
                 crops.push({ img: eyeCrop, pos, key: 'eye' });
             }
 
-            if (data.weapon && data.weapon.img) {
+            if (data.weapon) {
                 const weaponImg = rotateImage(data.weapon.img, data.weapon.angle || 0);
                 const pos = [pivotX + (data.weapon.offset?.[0] || 0) - weaponImg.width / 2,
                              pivotY + (data.weapon.offset?.[1] || 0) - weaponImg.height / 2];
@@ -415,18 +431,17 @@
         }
 
         async function generateAll() {
-            if (!data.body || !data.body.sprites.length === 0) {
+            if (!data.body || !data.body.sprites) {
                 document.getElementById('status').innerText = 'Selecione um corpo primeiro.';
                 return;
             }
             const zip = new JSZip();
             const total = data.body.sprites.length;
-            document.getElementById('status').innerText = 'Gerando ZIP... 0%';
+            document.getElementById('status').innerText = 'Gerando ZIP...';
             for (let i = 0; i < total; i++) {
                 const canvas = montarFrame(i);
                 const blob = await new Promise(r => canvas.toBlob(r));
                 zip.file(`${data.body.sprites[i].name.replace(/[\\/]/g, '_')}.png`, blob);
-                document.getElementById('status').innerText = `Gerando ZIP... ${Math.round((i+1)/total*100)}%`;
             }
             const content = await zip.generateAsync({type: 'blob'});
             saveAs(content, 'Personagem_MagicRampage.zip');
@@ -451,7 +466,7 @@
                 catalog.armor.folders.forEach(name => armorList.push({name, type: 'folder', display: name}));
                 catalog.armor.single.forEach(name => armorList.push({name, type: 'single', display: name.replace(/_/g, ' ')}));
 
-                armorList.sort((a,b) => (a.display || a.name).localeCompare(b.display || b.name));
+                armorList.sort((a,b) => a.display.localeCompare(b.display));
 
                 createCatalog('bodyCatalog', catalog.body.map(n=>({name:n})), folders.body);
                 createCatalog('armorCatalog', armorList, folders.armor);
