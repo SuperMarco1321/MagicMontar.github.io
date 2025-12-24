@@ -109,7 +109,7 @@
                 const img = document.createElement('img');
                 if (catId === 'armorCatalog' && entry.type === 'folder') {
                     // Usa cache ou placeholder enquanto carrega
-                    img.src = folderPreviews[entry.name] || 'https://placehold.co/100x100?text=Carregando...';
+                    img.src = folderPreviews[entry.name] || 'https://placehold.it/100x100?text=Carregando...';
                     // Carrega preview se ainda não tiver
                     if (!folderPreviews[entry.name]) {
                         loadFolderPreview(entry.name, img);
@@ -117,7 +117,7 @@
                 } else {
                     img.src = basePath + `${folder}/Png/${entry.name}.png`;
                 }
-                img.onerror = () => img.src = 'https://placehold.co/100x100?text=Erro';
+                img.onerror = () => img.src = 'https://placehold.it/100x100?text=Erro';
                 div.appendChild(img);
                 const span = document.createElement('span');
                 span.innerText = (entry.display || entry.name).replace(/_/g, ' ');
@@ -128,23 +128,20 @@
 
         async function loadFolderPreview(folderName, imgElement) {
             const repo = 'SuperMarco1321/MagicMontar.github.io';
-            const apiUrl = `https://api.github.com/repos/${repo}/contents/${folders.armor}/Png/${encodeURIComponent(folderName)}`;
+            const apiUrl = `https://api.github.com/repos/SuperMarco1321/MagicMontar.github.io/contents/Armaduras/Png/${folderName}`;
             try {
                 const res = await fetch(apiUrl);
-                if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+                if (!res.ok) throw new Error();
                 const files = await res.json();
                 const pngFiles = files.filter(f => f.name.toLowerCase().endsWith('.png')).map(f => f.name).sort((a,b) => a.localeCompare(b));
                 if (pngFiles.length > 0) {
                     const firstPng = pngFiles[0];
-                    const previewUrl = basePath + `${folders.armor}/Png/${encodeURIComponent(folderName)}/${encodeURIComponent(firstPng)}`;
+                    const previewUrl = basePath + `${folders.armor}/Png/${folderName}/${firstPng}`;
                     folderPreviews[folderName] = previewUrl;
                     imgElement.src = previewUrl;
-                } else {
-                    imgElement.src = 'https://placehold.co/100x100?text=Sem+Preview';
                 }
             } catch (e) {
-                console.error(`Erro ao carregar preview para ${folderName}: ${e.message}`);
-                imgElement.src = 'https://placehold.co/100x100?text=Sem+Preview';
+                imgElement.src = 'https://placehold.it/100x100?text=Sem+Preview';
             }
         }
 
@@ -153,23 +150,23 @@
             let pngUrl, xmlUrl;
 
             if (type === 'single') {
-                pngUrl = `${folders.armor}/Png/${encodeURIComponent(name)}.png`;
-                xmlUrl = `${folders.armor}/Xml/${encodeURIComponent(name)}.xml`;
+                pngUrl = `${folders.armor}/Png/${name}.png`;
+                xmlUrl = `${folders.armor}/Xml/${name}.xml`;
                 helmetToggle.classList.add('disabled');
             } else {
                 const repo = 'SuperMarco1321/MagicMontar.github.io';
-                const apiUrl = `https://api.github.com/repos/${repo}/contents/${folders.armor}/Png/${encodeURIComponent(name)}`;
+                const apiUrl = `https://api.github.com/repos/${repo}/contents/${folders.armor}/Png/${name}`;
                 try {
                     const res = await fetch(apiUrl);
-                    if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+                    if (!res.ok) throw new Error();
                     const files = await res.json();
                     const pngFiles = files.filter(f => f.name.toLowerCase().endsWith('.png')).map(f => f.name).sort((a,b) => a.localeCompare(b));
                     if (pngFiles.length === 0) throw new Error('Sem PNG');
                     const index = withHelmet ? 0 : Math.min(1, pngFiles.length - 1);
                     const selectedPng = pngFiles[index];
                     const baseName = selectedPng.replace('.png', '');
-                    pngUrl = `${folders.armor}/Png/${encodeURIComponent(name)}/${encodeURIComponent(selectedPng)}`;
-                    xmlUrl = `${folders.armor}/Xml/${encodeURIComponent(baseName)}.xml`;
+                    pngUrl = `${folders.armor}/Png/${name}/${selectedPng}`;
+                    xmlUrl = `${folders.armor}/Xml/${name}/${baseName}.xml`;
                     if (pngFiles.length < 2) helmetToggle.classList.add('disabled');
                 } catch (e) {
                     console.error(e);
@@ -203,8 +200,8 @@
         }
 
         async function loadAsset(type, name, folder, isWeapon) {
-            const pngUrl = isWeapon ? `${folder}/Png/${encodeURIComponent(name)}.png` : `${folder}/Png/${encodeURIComponent(name)}.png`;
-            const xmlUrl = isWeapon ? null : `${folder}/Xml/${encodeURIComponent(name)}.xml`;
+            const pngUrl = isWeapon ? `${folder}/Png/${name}.png` : `${folder}/Png/${name}.png`;
+            const xmlUrl = isWeapon ? null : `${folder}/Xml/${name}.xml`;
 
             const img = new Image();
             img.crossOrigin = 'anonymous';
@@ -419,7 +416,7 @@
         async function loadCatalog() {
             try {
                 const res = await fetch(basePath + 'catalog.json');
-                if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+                if (!res.ok) throw new Error();
                 catalog = await res.json();
 
                 const armorList = [];
