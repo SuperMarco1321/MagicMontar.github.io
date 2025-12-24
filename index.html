@@ -62,8 +62,7 @@
     <p id="status">Carregando catálogo...</p>
 
     <script>
-        const basePath = '';
-        const rawBase = 'https://raw.githubusercontent.com/SuperMarco1321/MagicMontar.github.io/main/';
+        const basePath = 'https://raw.githubusercontent.com/SuperMarco1321/MagicMontar.github.io/main/';
         const folders = {
             body: 'Corpo',
             armor: 'Armaduras',
@@ -80,7 +79,7 @@
         let bodyColor = {r: 255, g: 255, b: 255};
         let eyeColor = {r: 255, g: 255, b: 255};
         let withHelmet = true;
-        let folderPreviews = {};
+        let folderPreviews = {}; // cache dos primeiros PNG de cada pasta
 
         const helmetToggle = document.getElementById('helmetToggle');
         helmetToggle.onclick = () => {
@@ -109,14 +108,16 @@
                 };
                 const img = document.createElement('img');
                 if (catId === 'armorCatalog' && entry.type === 'folder') {
-                    img.src = folderPreviews[entry.name] || 'https://placehold.co/100x100/black/white?text=Carregando...';
+                    // Usa cache ou placeholder enquanto carrega
+                    img.src = folderPreviews[entry.name] || 'https://placehold.co/100x100?text=Carregando...';
+                    // Carrega preview se ainda não tiver
                     if (!folderPreviews[entry.name]) {
                         loadFolderPreview(entry.name, img);
                     }
                 } else {
-                    img.src = rawBase + `${folder}/Png/${entry.name}.png`;
+                    img.src = basePath + `${folder}/Png/${entry.name}.png`;
                 }
-                img.onerror = () => img.src = 'https://placehold.co/100x100/red/white?text=Erro';
+                img.onerror = () => img.src = 'https://placehold.co/100x100?text=Erro';
                 div.appendChild(img);
                 const span = document.createElement('span');
                 span.innerText = (entry.display || entry.name).replace(/_/g, ' ');
@@ -126,88 +127,88 @@
         }
 
         async function loadFolderPreview(folderName, imgElement) {
-            const apiUrl = `https://api.github.com/repos/SuperMarco1321/MagicMontar.github.io/contents/${folders.armor}/Png/${folderName}`;
+            const repo = 'SuperMarco1321/MagicMontar.github.io';
+            const apiUrl = `https://api.github.com/repos/${repo}/contents/${folders.armor}/Png/${folderName}`;
             try {
                 const res = await fetch(apiUrl);
-                if (!res.ok) throw new Error();
+                if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
                 const files = await res.json();
                 const pngFiles = files.filter(f => f.name.toLowerCase().endsWith('.png')).map(f => f.name).sort((a,b) => a.localeCompare(b));
                 if (pngFiles.length > 0) {
                     const firstPng = pngFiles[0];
-                    const previewUrl = rawBase + `${folders.armor}/Png/${folderName}/${firstPng}`;
+                    const previewUrl = `https://raw.githubusercontent.com/${repo}/main/${folders.armor}/Png/${folderName}/${firstPng}`;
                     folderPreviews[folderName] = previewUrl;
                     imgElement.src = previewUrl;
                 } else {
-                    imgElement.src = 'https://placehold.co/100x100/gray/white?text=Sem+PNG';
+                    imgElement.src = 'https://placehold.co/100x100?text=Sem+Preview';
                 }
             } catch (e) {
-                console.error(e);
-                imgElement.src = 'https://placehold.co/100x100/red/white?text=Erro+Preview';
+                console.error(`Erro ao carregar preview para ${folderName}: ${e.message}`);
+                imgElement.src = 'https://placehold.co/100x100?text=Sem+Preview';
             }
         }
 
         async function loadArmor(name, type) {
-            helmetToggle.classList.toggle('disabled', type === 'single');
+            helmetToggle.classList.remove('disabled');
             let pngUrl, xmlUrl;
 
             if (type === 'single') {
                 pngUrl = `${folders.armor}/Png/${name}.png`;
                 xmlUrl = `${folders.armor}/Xml/${name}.xml`;
-            } else { // folder
-                const apiUrl = `https://api.github.com/repos/SuperMarco1321/MagicMontar.github.io/contents/${folders.armor}/Png/${name}`;
+                helmetToggle.classList.add('disabled');
+            } else {
+                const repo = 'SuperMarco1321/MagicMontar.github.io';
+                const apiUrl = `https://api.github.com/repos/${repo}/contents/${folders.armor}/Png/${name}`;
                 try {
                     const res = await fetch(apiUrl);
-                    if (!res.ok) throw new Error();
+                    if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
                     const files = await res.json();
-                    let pngFiles = files.filter(f => f.name.toLowerCase().endsWith('.png')).map(f => f.name).sort((a,b) => a.localeCompare(b));
-                    if (pngFiles.length === 0) throw new Error('Sem PNGs');
-                    // Prioridade: se tiver arquivo com "nohelmet" ou similar, mas como você disse ordem alfabética:
-                    const index = withHelmet ? 0 : (pngFiles.length >= 2 ? 1 : 0);
+                    const pngFiles = files.filter(f => f.name.toLowerCase().endsWith('.png')).map(f => f.name).sort((a,b) => a.localeCompare(b));
+                    if (pngFiles.length === 0) throw new Error('Sem PNG');
+                    const index = withHelmet ? 0 : Math.min(1, pngFiles.length - 1);
                     const selectedPng = pngFiles[index];
                     const baseName = selectedPng.replace('.png', '');
                     pngUrl = `${folders.armor}/Png/${name}/${selectedPng}`;
-                    xmlUrl = `${folders.armor}/Xml/${name}/${baseName}.xml`;
-
-                    // Atualiza botão se tiver menos de 2 PNGs
+                    xmlUrl = `${folders.armor}/Xml/${baseName}.xml`;  // XMLs são flat, sem subpasta
                     if (pngFiles.length < 2) helmetToggle.classList.add('disabled');
                 } catch (e) {
                     console.error(e);
-                    document.getElementById('status').innerText = 'Erro ao carregar armadura em pasta.';
+                    document.getElementById('status').innerText = 'Erro ao carregar pasta de armadura.';
                     return;
                 }
             }
 
-            const fullPng = rawBase + pngUrl;
-            const fullXml = rawBase + xmlUrl;
+            const fullPng = basePath + pngUrl;
+            const fullXml = basePath + xmlUrl;
 
             const img = new Image();
             img.crossOrigin = 'anonymous';
             img.src = fullPng;
             await new Promise((resolve, reject) => {
                 img.onload = resolve;
-                img.onerror = () => reject('Erro ao carregar PNG da armadura');
+                img.onerror = () => reject('Erro PNG');
             });
 
             data.armor = { img };
 
             try {
-                const xmlText = await fetch(fullXml).then(r => r.ok ? r.text() : Promise.reject());
+                const xmlText = await fetch(fullXml).then(r => { if (r.ok) return r.text(); else throw new Error('XML não encontrado'); });
                 data.armor.sprites = parseXML(xmlText);
-            } catch (err) {
-                console.warn('XML não encontrado ou erro, usando PNG completo sem sprites');
-                data.armor.sprites = []; // Usa o PNG inteiro como fallback se XML falhar
+            } catch (e) {
+                console.warn('XML não encontrado, usando apenas PNG: ' + e.message);
+                data.armor.sprites = [];
             }
 
             updatePreview();
         }
 
         async function loadAsset(type, name, folder, isWeapon) {
-            const pngUrl = `${folder}/Png/${name}.png`;
+            const pngUrl = isWeapon ? `${folder}/Png/${name}.png` : `${folder}/Png/${name}.png`;
             const xmlUrl = isWeapon ? null : `${folder}/Xml/${name}.xml`;
 
             const img = new Image();
             img.crossOrigin = 'anonymous';
-            img.src = rawBase + pngUrl;
+            img.src = basePath + pngUrl;
             await new Promise((resolve, reject) => {
                 img.onload = resolve;
                 img.onerror = reject;
@@ -217,15 +218,16 @@
 
             if (!isWeapon && xmlUrl) {
                 try {
-                    const xmlText = await fetch(rawBase + xmlUrl).then(r => r.ok ? r.text() : Promise.reject());
+                    const xmlText = await fetch(basePath + xmlUrl).then(r => { if (r.ok) return r.text(); else throw new Error('XML não encontrado'); });
                     data[type].sprites = parseXML(xmlText);
-                } catch {
+                } catch (e) {
+                    console.warn('XML não encontrado para ' + type + ': ' + e.message);
                     data[type].sprites = [];
                 }
             }
 
             if (isWeapon) {
-                const angulosUrl = rawBase + 'Arma/Angulos.txt';
+                const angulosUrl = basePath + 'Arma/Angulos.txt';
                 try {
                     const text = await fetch(angulosUrl).then(r => r.text());
                     const bloco = text.match(new RegExp(`\\{[^}]*sprite\\s*=\\s*${name.replace('.', '\\.')};[^}]*\\}`));
@@ -300,17 +302,11 @@
             const crops = [{ img: bodyCrop, pos: bodyPos, key: 'body' }];
 
             ['armor', 'amuleto', 'pet', 'head'].forEach(key => {
-                if (data[key]) {
-                    if (data[key].sprites && data[key].sprites.length > 0) {
-                        const s = data[key].sprites[Math.min(frameIndex, data[key].sprites.length - 1)];
-                        const crop = cropImage(data[key].img, s.x, s.y, s.w, s.h);
-                        const pos = calcularPosicao(pivotX, pivotY, s);
-                        crops.push({ img: crop, pos, key });
-                    } else if (key === 'armor' && data[key].img) {
-                        // Fallback para armaduras sem XML: desenha PNG inteiro centrado no pivot
-                        const pos = [pivotX - data[key].img.width / 2, pivotY - data[key].img.height / 2];
-                        crops.push({ img: data[key].img, pos, key });
-                    }
+                if (data[key] && data[key].sprites && data[key].sprites.length > 0) {
+                    const s = data[key].sprites[Math.min(frameIndex, data[key].sprites.length - 1)];
+                    const crop = cropImage(data[key].img, s.x, s.y, s.w, s.h);
+                    const pos = calcularPosicao(pivotX, pivotY, s);
+                    crops.push({ img: crop, pos, key });
                 }
             });
 
@@ -403,12 +399,11 @@
             }
             const zip = new JSZip();
             const total = data.body.sprites.length;
-            document.getElementById('status').innerText = 'Gerando ZIP... 0%';
+            document.getElementById('status').innerText = 'Gerando ZIP...';
             for (let i = 0; i < total; i++) {
                 const canvas = montarFrame(i);
                 const blob = await new Promise(r => canvas.toBlob(r));
                 zip.file(`${data.body.sprites[i].name.replace(/[\\/]/g, '_')}.png`, blob);
-                document.getElementById('status').innerText = `Gerando ZIP... ${Math.round((i+1)/total*100)}%`;
             }
             const content = await zip.generateAsync({type: 'blob'});
             saveAs(content, 'Personagem_MagicRampage.zip');
@@ -424,11 +419,12 @@
 
         async function loadCatalog() {
             try {
-                const res = await fetch(rawBase + 'catalog.json');
-                if (!res.ok) throw new Error();
+                const res = await fetch(basePath + 'catalog.json');
+                if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
                 catalog = await res.json();
 
                 const armorList = [];
+
                 catalog.armor.folders.forEach(name => armorList.push({name, type: 'folder', display: name}));
                 catalog.armor.single.forEach(name => armorList.push({name, type: 'single', display: name.replace(/_/g, ' ')}));
 
@@ -442,7 +438,7 @@
                 createCatalog('eyeCatalog', catalog.eye.map(n=>({name:n})), folders.eye);
                 createCatalog('weaponCatalog', catalog.weapon.map(n=>({name:n})), folders.weapon, true);
 
-                document.getElementById('status').innerText = 'Catálogo carregado! Selecione as partes.';
+                document.getElementById('status').innerText = 'Catálogo carregado! Selecione as imagens.';
             } catch (e) {
                 console.error(e);
                 document.getElementById('status').innerText = 'Erro ao carregar catalog.json';
