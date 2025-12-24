@@ -198,36 +198,6 @@
     </div>
 
     <script>
-        // ... (todo o script anterior permanece exatamente o mesmo até aqui)
-
-        // Adicionando apenas o código do acordeão
-        const accButtons = document.querySelectorAll(".accordion-button");
-        accButtons.forEach(button => {
-            button.addEventListener("click", function () {
-                // Fecha todas as outras
-                accButtons.forEach(other => {
-                    if (other !== this) {
-                        other.classList.remove("active");
-                        other.nextElementSibling.style.maxHeight = null;
-                    }
-                });
-
-                // Alterna a atual
-                this.classList.toggle("active");
-                const panel = this.nextElementSibling;
-                if (panel.style.maxHeight) {
-                    panel.style.maxHeight = null;
-                } else {
-                    panel.style.maxHeight = panel.scrollHeight + "px";
-                }
-            });
-        });
-
-        // O resto do script (todas as funções: loadArmor, loadAsset, montarFrame, etc.) continua igual ao da versão anterior que já estava funcionando perfeitamente.
-
-        // Cole aqui o <script> completo da versão anterior (a partir de const basePath = '';) 
-        // mantendo todas as funções que já corrigimos (loadArmor com XML solto, etc.)
-
         const basePath = '';
         const folders = {
             body: 'Corpo',
@@ -247,6 +217,20 @@
         let withHelmet = true;
 
         const helmetToggle = document.getElementById('helmetToggle');
+        const bodyColorInput = document.getElementById('bodyColor');
+        const eyeColorInput = document.getElementById('eyeColor');
+
+        // Atualização automática das cores
+        bodyColorInput.addEventListener('input', () => {
+            bodyColor = hexToRgb(bodyColorInput.value);
+            updatePreview();
+        });
+
+        eyeColorInput.addEventListener('input', () => {
+            eyeColor = hexToRgb(eyeColorInput.value);
+            updatePreview();
+        });
+
         helmetToggle.onclick = () => {
             if (helmetToggle.classList.contains('disabled')) return;
             withHelmet = !withHelmet;
@@ -261,15 +245,32 @@
                 const div = document.createElement('div');
                 div.className = 'item';
                 div.onclick = () => {
-                    document.querySelectorAll(`#${catId} .selected`).forEach(el => el.classList.remove('selected'));
-                    div.classList.add('selected');
-                    if (catId === 'armorCatalog') {
-                        selected.armor = entry;
-                        loadArmor(entry);
+                    const currentlySelected = cat.querySelector('.selected');
+                    if (currentlySelected === div) {
+                        // Deseleciona se clicar no mesmo item novamente
+                        currentlySelected.classList.remove('selected');
+                        if (catId === 'armorCatalog') {
+                            delete selected.armor;
+                            delete data.armor;
+                        } else {
+                            const key = catId.replace('Catalog', '');
+                            delete selected[key];
+                            delete data[key];
+                        }
                     } else {
-                        selected[catId.replace('Catalog', '')] = entry.name;
-                        loadAsset(catId.replace('Catalog', ''), entry.name, folder, isWeapon);
+                        // Seleciona novo item
+                        if (currentlySelected) currentlySelected.classList.remove('selected');
+                        div.classList.add('selected');
+                        if (catId === 'armorCatalog') {
+                            selected.armor = entry;
+                            loadArmor(entry);
+                        } else {
+                            const key = catId.replace('Catalog', '');
+                            selected[key] = entry.name;
+                            loadAsset(key, entry.name, folder, isWeapon);
+                        }
                     }
+                    updatePreview();
                 };
                 const img = document.createElement('img');
                 if (catId === 'armorCatalog' && entry.type === 'folder') {
@@ -298,7 +299,7 @@
             } else {
                 baseName = withHelmet ? entry.with_helmet : entry.without_helmet;
                 pngUrl = `${folders.armor}/Png/${entry.name}/${baseName}.png`;
-                xmlUrl = `${folders.armor}/Xml/${baseName}.xml`; // XMLs soltos na pasta Xml
+                xmlUrl = `${folders.armor}/Xml/${baseName}.xml`;
                 if (entry.with_helmet === entry.without_helmet) {
                     helmetToggle.classList.add('disabled');
                 }
@@ -334,6 +335,8 @@
                 .catch(e => {
                     console.error('Erro ao carregar XML:', e);
                     document.getElementById('status').innerText = 'Erro ao carregar XML de armadura.';
+                    delete data.armor; // Limpa se der erro
+                    updatePreview();
                 });
         }
 
@@ -362,11 +365,15 @@
                         }));
                         updatePreview();
                     })
-                    .catch(e => console.error('Erro XML:', e));
+                    .catch(e => {
+                        console.error('Erro XML:', e);
+                        delete data[key];
+                        updatePreview();
+                    });
             } else {
-                // Para armas, carregar ângulo e offset se disponível (melhoria opcional)
-                data[key].angle = 0; // Pode ser carregado de um arquivo de config
+                data[key].angle = 0;
                 data[key].offset = [0, 0];
+                updatePreview();
             }
         }
 
@@ -482,9 +489,7 @@
             return canvas;
         }
 
-        async function updatePreview() {
-            bodyColor = hexToRgb(document.getElementById('bodyColor').value);
-            eyeColor = hexToRgb(document.getElementById('eyeColor').value);
+        function updatePreview() {
             const canvas = montarFrame(0);
             if (canvas) {
                 const prev = document.getElementById('preview');
@@ -529,7 +534,6 @@
                 catalog = await res.json();
 
                 const armorList = [];
-
                 catalog.armor.folders.forEach(folder => {
                     armorList.push({
                         name: folder.name,
@@ -546,7 +550,6 @@
                         display: name.replace(/_/g, ' ')
                     });
                 });
-
                 armorList.sort((a,b) => a.display.localeCompare(b.display));
 
                 createCatalog('bodyCatalog', catalog.body.map(n=>({name:n})), folders.body);
@@ -563,6 +566,26 @@
                 document.getElementById('status').innerText = 'Erro ao carregar catalog.json';
             }
         }
+
+        // Acordeão
+        const accButtons = document.querySelectorAll(".accordion-button");
+        accButtons.forEach(button => {
+            button.addEventListener("click", function () {
+                accButtons.forEach(other => {
+                    if (other !== this) {
+                        other.classList.remove("active");
+                        other.nextElementSibling.style.maxHeight = null;
+                    }
+                });
+                this.classList.toggle("active");
+                const panel = this.nextElementSibling;
+                if (panel.style.maxHeight) {
+                    panel.style.maxHeight = null;
+                } else {
+                    panel.style.maxHeight = panel.scrollHeight + "px";
+                }
+            });
+        });
 
         window.onload = loadCatalog;
     </script>
