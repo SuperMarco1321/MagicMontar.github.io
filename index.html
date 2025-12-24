@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Montador Magic Rampage - By Marco</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+    <style>
+        body { font-family: Arial, sans-serif; background: #111; color: #fff; padding: 20px; text-align: center; }
+        h1 { color: #ffcc00; }
+        h2 { color: #ddd; margin-top: 30px; }
+        .catalog { display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 15px; margin: 20px auto; max-width: 1200px; }
+        .item { background: #222; padding: 10px; border-radius: 8px; cursor: pointer; transition: 0.3s; }
+        .item:hover { background: #333; }
+        .item img { width: 100%; height: 100px; object-fit: contain; image-rendering: pixelated; background: rgba(0,0,0,0.5); border-radius: 5px; }
+        .item span { display: block; margin-top: 5px; font-size: 0.8em; text-transform: capitalize; }
+        .item.selected { border: 3px solid #ffcc00; }
+        canvas { border: 2px solid #444; margin: 20px auto; display: block; image-rendering: pixelated; max-width: 100%; background: #000; }
+        button { padding: 15px 30px; background: #ffcc00; color: #000; border: none; font-size: 18px; cursor: pointer; margin: 10px; border-radius: 8px; }
+        button:hover { background: #ffdd44; }
+        label { display: block; margin: 10px 0; }
+        input[type="color"] { width: 50px; height: 30px; }
+        #status { margin: 20px; font-size: 1.2em; color: #bbb; }
+    </style>
+</head>
+<body>
+    <h1>Montador de Personagens Magic Rampage</h1>
+    <p>Criado por Marco para a comunidade! Clique nas imagens para selecionar.</p>
+
+    <label>Cor do corpo: <input type="color" id="bodyColor" value="#ffffff"></label>
+    <label>Cor dos olhos: <input type="color" id="eyeColor" value="#ffffff"></label>
+
+    <h2>Corpo (obrigatório)</h2>
+    <div class="catalog" id="bodyCatalog"></div>
+
+    <h2>Armadura</h2>
+    <div class="catalog" id="armorCatalog"></div>
+
+    <h2>Amuleto</h2>
+    <div class="catalog" id="amuletoCatalog"></div>
+
+    <h2>Pet</h2>
+    <div class="catalog" id="petCatalog"></div>
+
+    <h2>Cabeça</h2>
+    <div class="catalog" id="headCatalog"></div>
+
+    <h2>Olhos (com brilho additive)</h2>
+    <div class="catalog" id="eyeCatalog"></div>
+
+    <h2>Arma</h2>
+    <div class="catalog" id="weaponCatalog"></div>
+
+    <button onclick="updatePreview()">Atualizar Preview</button>
+    <button onclick="generateAll()">Gerar ZIP Completo</button>
+
+    <canvas id="preview" width="400" height="400"></canvas>
+    <p id="status">Carregando catálogo...</p>
+
+    <script>
+        // Configurações das pastas (diretórios reais do repo)
+        const basePath = ''; // vazio para raiz do GitHub Pages
+        const folders = {
+            body: 'Corpo',
+            armor: 'Armaduras',
+            amuleto: 'Amuleto',
+            pet: 'Pet',
+            head: 'Cabeça',
+            eye: 'Olho',
+            weapon: 'Arma'
+        };
+
+        let items = {}; // Será carregado do JSON
+        let selected = {};
+        let data = {};
+        let bodyColor = {r: 255, g: 255, b: 255};
+        let eyeColor = {r: 255, g: 255, b: 255};
+
+        // Função para criar catálogo com thumbnails
+        function createCatalog(catId, folder, isWeapon = false) {
+            const list = items[catId.replace('Catalog', '')];
+            const cat = document.getElementById(catId);
+            cat.innerHTML = ''; // Limpar antes de popular
+            list.forEach(name => {
+                const div = document.createElement('div');
+                div.className = 'item';
+                div.onclick = () => {
+                    document.querySelectorAll(`#${catId} .selected`).forEach(el => el.classList.remove('selected'));
+                    div.classList.add('selected');
+                    selected[catId.replace('Catalog', '')] = name;
+                    loadAsset(catId.replace('Catalog', ''), name, folder, isWeapon);
+                };
+                const img = document.createElement('img');
+                const pngPath = isWeapon ? `${folder}/Png/${name}.png` : `${folder}/Png/${name}.png`;
+                img.src = basePath + pngPath;
+                img.alt = name;
+                img.onerror = () => {
+                    img.src = 'https://placehold.it/100x100?text=Erro';
+                    console.error(`Erro ao carregar: ${pngPath}`);
+                };
+                div.appendChild(img);
+                const span = document.createElement('span');
+                span.innerText = name.replace(/_/g, ' ').replace('pet ', '').replace('eye ', '').replace(/[-+]/g, '');
+                div.appendChild(span);
+                cat.appendChild(div);
+            });
+        }
+
+        // Carregar asset (PNG + XML)
+        async function loadAsset(type, name, folder, isWeapon) {
+            const pngUrl = basePath + (isWeapon ? `${folder}/Png/${name}.png` : `${folder}/Png/${name}.png`);
+            const xmlUrl = isWeapon ? null : basePath + `${folder}/Xml/${name}.xml`;
+            const img = new Image();
+            img.crossOrigin = 'anonymous';
+            img.src = pngUrl;
+            await new Promise((resolve, reject) => {
+                img.onload = resolve;
+                img.onerror = () => {
+                    console.error(`Erro ao carregar PNG: ${pngUrl}`);
+                    reject();
+                };
+            });
+            data[type] = { img };
+            if (!isWeapon && xmlUrl) {
+                try {
+                    const xmlText = await fetch(xmlUrl).then(r => {
+                        if (!r.ok) throw new Error('XML não encontrado');
+                        return r.text();
+                    });
+                    data[type].sprites = parseXML(xmlText);
+                } catch (e) {
+                    console.error(`Erro ao carregar XML: ${xmlUrl}`, e);
+                    data[type].sprites = []; // Fallback vazio
+                }
+            }
+            // Para arma, carregar Angulos.txt se existir
+            if (isWeapon) {
+                const angulosUrl = basePath + 'Arma/Angulos.txt';
+                try {
+                    const angulosText = await fetch(angulosUrl).then(r => r.text());
+                    const bloco = angulosText.match(new RegExp(`\\{[^}]*sprite\\s*=\\s*${name.replace(".", "\\.")};[^}]*\\}`));
+                    if (bloco) {
+                        const angle = bloco[0].match(/equippedAngle\s*=\s*([-\d.]+)/);
+                        const ox = bloco[0].match(/equipOffsetX\s*=\s*([-\d]+)/);
+                        const oy = bloco[0].match(/equipOffsetY\s*=\s*([-\d]+)/);
+                        data[type].angle = angle ? parseFloat(angle[1]) : 0;
+                        data[type].offset = [ox ? parseInt(ox[1]) : 0, oy ? parseInt(oy[1]) : 0];
+                    }
+                } catch (e) {
+                    console.error('Erro ao carregar Angulos.txt', e);
+                    data[type].angle = 0;
+                    data[type].offset = [0, 0];
+                }
+            }
+            updatePreview();
+        }
+
+        // Parse XML (igual ao Python)
+        function parseXML(text) {
+            const parser = new DOMParser();
+            const xml = parser.parseFromString(text, "text/xml");
+            const sprites = [];
+            xml.querySelectorAll("sprite").forEach(s => {
+                sprites.push({
+                    name: s.getAttribute("n"),
+                    x: parseInt(s.getAttribute("x")),
+                    y: parseInt(s.getAttribute("y")),
+                    w: parseInt(s.getAttribute("w")),
+                    h: parseInt(s.getAttribute("h")),
+                    oX: parseInt(s.getAttribute("oX") || 0),
+                    oY: parseInt(s.getAttribute("oY") || 0),
+                    oW: parseInt(s.getAttribute("oW") || 0),
+                    oH: parseInt(s.getAttribute("oH") || 0),
+                    pX: parseFloat(s.getAttribute("pX") || 0.5),
+                    pY: parseFloat(s.getAttribute("pY") || 0.5)
+                });
+            });
+            return sprites.sort((a, b) => naturalKey(a.name) - naturalKey(b.name));
+        }
+
+        function naturalKey(name) {
+            return name.replace(/\D/g, '') || name;
+        }
+
+        // Tint de cor (igual ao Python, usando multiply + destination-atop)
+        function tintImage(img, color) {
+            const canvas = document.createElement("canvas");
+            canvas.width = img.width; canvas.height = img.height;
+            const ctx = canvas.getContext("2d");
+            ctx.drawImage(img, 0, 0);
+            ctx.globalCompositeOperation = "multiply";
+            ctx.fillStyle = `rgb(${color.r}, ${color.g}, ${color.b})`;
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.globalCompositeOperation = "destination-atop";
+            ctx.drawImage(img, 0, 0);
+            return canvas;
+        }
+
+        // Calcular posição (igual ao Python)
+        function calcularPosicao(pivotX, pivotY, sprite) {
+            if (!sprite) return [0, 0];
+            const posX = pivotX - (sprite.pX * sprite.oW - sprite.oX);
+            const posY = pivotY - (sprite.pY * sprite.oH - sprite.oY);
+            return [posX, posY];
+        }
+
+        // Montar frame (adaptado do Python)
+        function montarFrame(frameIndex) {
+            if (!data.body || !data.body.sprites || data.body.sprites.length === 0) return null;
+            const bodySprite = data.body.sprites[frameIndex] || data.body.sprites[0];
+            const pivotX = bodySprite.pX * bodySprite.oW;
+            const pivotY = bodySprite.pY * bodySprite.oH;
+
+            const canvas = document.createElement("canvas");
+            const ctx = canvas.getContext("2d");
+
+            // Corpo com tint
+            let bodyImg = data.body.img;
+            if (bodyColor.r !== 255 || bodyColor.g !== 255 || bodyColor.b !== 255) {
+                bodyImg = tintImage(bodyImg, bodyColor);
+            }
+            const bodyCrop = cropImage(bodyImg, bodySprite.x, bodySprite.y, bodySprite.w, bodySprite.h);
+            const bodyPos = calcularPosicao(pivotX, pivotY, bodySprite);
+
+            // Outras camadas (armor, amuleto, pet, head)
+            const layers = ['armor', 'amuleto', 'pet', 'head'];
+            const crops = [];
+            crops.push({ img: bodyCrop, pos: bodyPos, key: 'body' });
+
+            layers.forEach(key => {
+                if (data[key] && data[key].sprites && data[key].sprites.length > 0) {
+                    const s = data[key].sprites[Math.min(frameIndex, data[key].sprites.length - 1)];
+                    const crop = cropImage(data[key].img, s.x, s.y, s.w, s.h);
+                    const pos = calcularPosicao(pivotX, pivotY, s);
+                    crops.push({ img: crop, pos, key });
+                }
+            });
+
+            // Olhos com tint e additive
+            if (data.eye && data.eye.sprites && data.eye.sprites.length > 0) {
+                const s = data.eye.sprites[Math.min(frameIndex, data.eye.sprites.length - 1)];
+                let eyeCrop = cropImage(data.eye.img, s.x, s.y, s.w, s.h);
+                if (eyeColor.r !== 255 || eyeColor.g !== 255 || eyeColor.b !== 255) {
+                    eyeCrop = tintImage(eyeCrop, eyeColor);
+                }
+                const pos = calcularPosicao(pivotX, pivotY, s);
+                crops.push({ img: eyeCrop, pos, key: 'eye' });
+            }
+
+            // Arma com rotação
+            if (data.weapon) {
+                const weaponImg = rotateImage(data.weapon.img, data.weapon.angle || 0);
+                const pos = [pivotX + (data.weapon.offset[0] || 0) - weaponImg.width / 2, pivotY + (data.weapon.offset[1] || 0) - weaponImg.height / 2];
+                crops.push({ img: weaponImg, pos, key: 'weapon' });
+            }
+
+            // Bounding box
+            let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+            crops.forEach(c => {
+                minX = Math.min(minX, c.pos[0]);
+                minY = Math.min(minY, c.pos[1]);
+                maxX = Math.max(maxX, c.pos[0] + c.img.width);
+                maxY = Math.max(maxY, c.pos[1] + c.img.height);
+            });
+
+            canvas.width = Math.max(1, maxX - minX); // Evitar zero
+            canvas.height = Math.max(1, maxY - minY);
+
+            // Ordem normal
+            const order = ['weapon', 'body', 'armor', 'amuleto', 'pet', 'head'];
+            order.forEach(k => {
+                const c = crops.find(c => c.key === k);
+                if (c) {
+                    ctx.drawImage(c.img, c.pos[0] - minX, c.pos[1] - minY);
+                }
+            });
+
+            // Olhos additive
+            const eye = crops.find(c => c.key === 'eye');
+            if (eye) {
+                ctx.globalCompositeOperation = 'lighter';
+                ctx.drawImage(eye.img, eye.pos[0] - minX, eye.pos[1] - minY);
+            }
+
+            return canvas;
+        }
+
+        function cropImage(img, x, y, w, h) {
+            const canvas = document.createElement("canvas");
+            canvas.width = w; canvas.height = h;
+            const ctx = canvas.getContext("2d");
+            ctx.drawImage(img, x, y, w, h, 0, 0, w, h);
+            return canvas;
+        }
+
+        function rotateImage(img, angle) {
+            const canvas = document.createElement("canvas");
+            const rad = angle * Math.PI / 180;
+            const sin = Math.abs(Math.sin(rad));
+            const cos = Math.abs(Math.cos(rad));
+            canvas.width = img.width * cos + img.height * sin;
+            canvas.height = img.width * sin + img.height * cos;
+            const ctx = canvas.getContext("2d");
+            ctx.translate(canvas.width / 2, canvas.height / 2);
+            ctx.rotate(rad);
+            ctx.drawImage(img, -img.width / 2, -img.height / 2);
+            return canvas;
+        }
+
+        async function updatePreview() {
+            bodyColor = hexToRgb(document.getElementById('bodyColor').value);
+            eyeColor = hexToRgb(document.getElementById('eyeColor').value);
+            const canvas = montarFrame(0);
+            if (canvas) {
+                const prev = document.getElementById('preview');
+                prev.width = canvas.width;
+                prev.height = canvas.height;
+                prev.getContext("2d").drawImage(canvas, 0, 0);
+                document.getElementById('status').innerText = 'Preview atualizado!';
+            } else {
+                document.getElementById('status').innerText = 'Selecione um corpo primeiro.';
+            }
+        }
+
+        async function generateAll() {
+            if (!data.body || !data.body.sprites || data.body.sprites.length === 0) {
+                document.getElementById('status').innerText = 'Selecione um corpo primeiro.';
+                return;
+            }
+            const zip = new JSZip();
+            const total = data.body.sprites.length;
+            for (let i = 0; i < total; i++) {
+                const canvas = montarFrame(i);
+                const blob = await new Promise(r => canvas.toBlob(r));
+                zip.file(`${data.body.sprites[i].name.replace(/[\\/]/g, '_')}.png`, blob);
+            }
+            const content = await zip.generateAsync({type: 'blob'});
+            saveAs(content, 'Personagem_MagicRampage.zip');
+            document.getElementById('status').innerText = 'ZIP gerado e baixado!';
+        }
+
+        function hexToRgb(hex) {
+            return { r: parseInt(hex.slice(1,3),16), g: parseInt(hex.slice(3,5),16), b: parseInt(hex.slice(5,7),16) };
+        }
+
+        // Carregar catálogo do JSON e popular
+        async function loadCatalog() {
+            try {
+                const response = await fetch(basePath + 'catalog.json');
+                if (!response.ok) throw new Error('JSON não encontrado');
+                items = await response.json();
+                createCatalog('bodyCatalog', folders.body);
+                createCatalog('armorCatalog', folders.armor);
+                createCatalog('amuletoCatalog', folders.amuleto);
+                createCatalog('petCatalog', folders.pet);
+                createCatalog('headCatalog', folders.head);
+                createCatalog('eyeCatalog', folders.eye);
+                createCatalog('weaponCatalog', folders.weapon, true);
+                document.getElementById('status').innerText = 'Catálogo carregado! Selecione as imagens.';
+            } catch (e) {
+                console.error('Erro ao carregar catalog.json', e);
+                document.getElementById('status').innerText = 'Erro ao carregar catálogo. Verifique catalog.json.';
+            }
+        }
+
+        window.onload = loadCatalog;
+    </script>
+</body>
+</html>
