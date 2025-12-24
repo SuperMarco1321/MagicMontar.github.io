@@ -1,6 +1,7 @@
 {
     "body": [
         "character_body",
+        "character_body_head_only",
         "character_body_b",
         "character_body_b_shadow",
         "character_body_bat",
