@@ -79,6 +79,7 @@
         let bodyColor = {r: 255, g: 255, b: 255};
         let eyeColor = {r: 255, g: 255, b: 255};
         let withHelmet = true;
+        let folderPreviews = {}; // cache dos primeiros PNG de cada pasta
 
         const helmetToggle = document.getElementById('helmetToggle');
         helmetToggle.onclick = () => {
@@ -106,13 +107,15 @@
                     }
                 };
                 const img = document.createElement('img');
-                let pngPath;
                 if (catId === 'armorCatalog' && entry.type === 'folder') {
-                    pngPath = `${folder}/Png/${entry.name}/`; // será preenchido dinamicamente
-                    img.src = 'https://placehold.it/100x100?text=' + encodeURIComponent(entry.name);
+                    // Usa cache ou placeholder enquanto carrega
+                    img.src = folderPreviews[entry.name] || 'https://placehold.it/100x100?text=Carregando...';
+                    // Carrega preview se ainda não tiver
+                    if (!folderPreviews[entry.name]) {
+                        loadFolderPreview(entry.name, img);
+                    }
                 } else {
-                    pngPath = `${folder}/Png/${entry.name}.png`;
-                    img.src = basePath + pngPath;
+                    img.src = basePath + `${folder}/Png/${entry.name}.png`;
                 }
                 img.onerror = () => img.src = 'https://placehold.it/100x100?text=Erro';
                 div.appendChild(img);
@@ -123,6 +126,25 @@
             });
         }
 
+        async function loadFolderPreview(folderName, imgElement) {
+            const repo = 'SuperMarco1321/MagicMontar.github.io';
+            const apiUrl = `https://api.github.com/repos/${repo}/contents/${folders.armor}/Png/${folderName}`;
+            try {
+                const res = await fetch(apiUrl);
+                if (!res.ok) throw new Error();
+                const files = await res.json();
+                const pngFiles = files.filter(f => f.name.toLowerCase().endsWith('.png')).map(f => f.name).sort((a,b) => a.localeCompare(b));
+                if (pngFiles.length > 0) {
+                    const firstPng = pngFiles[0];
+                    const previewUrl = basePath + `${folders.armor}/Png/${folderName}/${firstPng}`;
+                    folderPreviews[folderName] = previewUrl;
+                    imgElement.src = previewUrl;
+                }
+            } catch (e) {
+                imgElement.src = 'https://placehold.it/100x100?text=Sem+Preview';
+            }
+        }
+
         async function loadArmor(name, type) {
             helmetToggle.classList.remove('disabled');
             let pngUrl, xmlUrl;
@@ -131,17 +153,14 @@
                 pngUrl = `${folders.armor}/Png/${name}.png`;
                 xmlUrl = `${folders.armor}/Xml/${name}.xml`;
                 helmetToggle.classList.add('disabled');
-            } else { // folder
+            } else {
                 const repo = 'SuperMarco1321/MagicMontar.github.io';
                 const apiUrl = `https://api.github.com/repos/${repo}/contents/${folders.armor}/Png/${name}`;
                 try {
                     const res = await fetch(apiUrl);
                     if (!res.ok) throw new Error();
                     const files = await res.json();
-                    const pngFiles = files
-                        .filter(f => f.name.toLowerCase().endsWith('.png'))
-                        .map(f => f.name)
-                        .sort((a, b) => a.localeCompare(b));
+                    const pngFiles = files.filter(f => f.name.toLowerCase().endsWith('.png')).map(f => f.name).sort((a,b) => a.localeCompare(b));
                     if (pngFiles.length === 0) throw new Error('Sem PNG');
                     const index = withHelmet ? 0 : Math.min(1, pngFiles.length - 1);
                     const selectedPng = pngFiles[index];
@@ -173,6 +192,7 @@
                 const xmlText = await fetch(fullXml).then(r => r.ok ? r.text() : Promise.reject());
                 data.armor.sprites = parseXML(xmlText);
             } catch {
+                console.warn('XML não encontrado, usando apenas PNG');
                 data.armor.sprites = [];
             }
 
