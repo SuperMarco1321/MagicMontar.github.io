@@ -199,6 +199,8 @@
             updatePreview();
         }
 
+        // As funções loadAsset, parseXML, tintImage, calcularPosicao, montarFrame, cropImage, rotateImage, updatePreview, generateAll, hexToRgb permanecem exatamente iguais à versão anterior.
+
         async function loadAsset(type, name, folder, isWeapon) {
             const pngUrl = isWeapon ? `${folder}/Png/${name}.png` : `${folder}/Png/${name}.png`;
             const xmlUrl = isWeapon ? null : `${folder}/Xml/${name}.xml`;
@@ -228,9 +230,9 @@
                     const text = await fetch(angulosUrl).then(r => r.text());
                     const bloco = text.match(new RegExp(`\\{[^}]*sprite\\s*=\\s*${name.replace('.', '\\.')};[^}]*\\}`));
                     if (bloco) {
-                        const angle = bloco[0].match(/equippedAngle\s*=\s*([-\d.]+)/);
-                        const ox = bloco[0].match(/equipOffsetX\s*=\s*([-\d]+)/);
-                        const oy = bloco[0].match(/equipOffsetY\s*=\s*([-\d]+)/);
+                        const angle = bloco[0].match(/equippedAngle\\s*=\\s*([-\\d.]+)/);
+                        const ox = bloco[0].match(/equipOffsetX\\s*=\\s*([-\\d]+)/);
+                        const oy = bloco[0].match(/equipOffsetY\\s*=\\s*([-\\d]+)/);
                         data[type].angle = angle ? parseFloat(angle[1]) : 0;
                         data[type].offset = [ox ? parseInt(ox[1]) : 0, oy ? parseInt(oy[1]) : 0];
                     }
@@ -384,7 +386,7 @@
                 prev.getContext("2d").drawImage(canvas, 0, 0);
                 document.getElementById('status').innerText = 'Preview atualizado!';
             } else {
-                document.getElementById('status').innerText = 'Selecione um corpo primeiro.';
+                document.getElementById('status').innerText = 'Selecione um corpo primeiro ou verifique XML da armadura.';
             }
         }
 
