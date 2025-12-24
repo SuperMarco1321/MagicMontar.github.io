@@ -16,67 +16,311 @@
     ],
     "armor": {
         "folders": [
-            "Arcane Mage Suit",
-            "Armor of Distant Visions",
-            "Barrenlands Bandit Female",
-            "Barrenlands Bandit Male",
-            "Black Witch Dress",
-            "Blaze Armor",
-            "Blue Wizard Suit",
-            "Cataclysmic Plate",
-            "Champion Set",
-            "Cthulhu Set",
-            "Dancers Raiment TikTok",
-            "Dark Lord Set+",
-            "Death Stalker",
-            "Deathdoctor Set",
-            "Desert Rogue Suit",
-            "Destroyer of the Corrupted",
-            "Easter Bunny Terminator Armor",
-            "Enchanted Nutcracker",
-            "Firestorm Armor",
-            "Firestorm Armor+",
-            "Forest Witch Dress",
-            "Gayan Set",
-            "Green Witch Dress",
-            "Greenfang Ensemble",
-            "Interrogator",
-            "Iron Widow",
-            "Jungle Master",
-            "Kings Spectre Tunic",
-            "Light Champion Set",
-            "Penumbra Suit",
-            "Penumbra Suit+",
-            "Plague Fighter Suit",
-            "Protector of the Oracle",
-            "Purple Witch Dress",
-            "Robe of Eternal Fire",
-            "Robe of Imminent Fires",
-            "Santa Claus",
-            "Scarlet Shadowweaver Garb",
-            "Special Anti-hero Set",
-            "Steelblow Armor",
-            "Steelblow Armor+",
-            "Storm",
-            "Swamp Ranger Suit",
-            "Swamp Witch Dress",
-            "Time Patroller",
-            "Tunic of Distant Ancestors",
-            "Tunic of Endless Justice",
-            "Tunic of Frozen Voices",
-            "Tunic of Hellish Illusions",
-            "Tunic of Ominous Comrades; Jester",
-            "Tunic of Twisted Illusions",
-            "Tunic of the Relentless",
-            "Unholy Storm",
-            "Vanquisher",
-            "Vest of Blessed Glory",
-            "Vest of Ominous Comrades",
-            "Vest of Phantoms Keeper",
-            "Vest of Twisted Illusions",
-            "Warden of Demons",
-            "Wind Witch Dress",
-            "Witch Dress"
+            {
+                "name": "Arcane Mage Suit",
+                "with_helmet": "armor_cloth_Na",
+                "without_helmet": "armor_cloth_Nb"
+            },
+            {
+                "name": "Armor of Distant Visions",
+                "with_helmet": "armor_earth_cloth_a",
+                "without_helmet": "armor_earth_cloth_b"
+            },
+            {
+                "name": "Barrenlands Bandit Female",
+                "with_helmet": "armor_cangaceira_a",
+                "without_helmet": "armor_cangaceira_b"
+            },
+            {
+                "name": "Barrenlands Bandit Male",
+                "with_helmet": "armor_cangaceiro_a",
+                "without_helmet": "armor_cangaceiro_b"
+            },
+            {
+                "name": "Black Witch Dress",
+                "with_helmet": "armor_darkp_Fa",
+                "without_helmet": "armor_darkp_Fb"
+            },
+            {
+                "name": "Blaze Armor",
+                "with_helmet": "armor_fire_soldier_a",
+                "without_helmet": "armor_fire_soldier_b"
+            },
+            {
+                "name": "Blue Wizard Suit",
+                "with_helmet": "armor_cloth_special_d1",
+                "without_helmet": "armor_cloth_special_d2"
+            },
+            {
+                "name": "Cataclysmic Plate",
+                "with_helmet": "armor_fire_plate_a",
+                "without_helmet": "armor_fire_plate_b"
+            },
+            {
+                "name": "Champion Set",
+                "with_helmet": "armor_cloth_special_e2",
+                "without_helmet": "armor_cloth_special_e2b"
+            },
+            {
+                "name": "Cthulhu Set",
+                "with_helmet": "armor_cthulhu_a",
+                "without_helmet": "armor_cthulhu_b"
+            },
+            {
+                "name": "Dancers Raiment TikTok",
+                "with_helmet": "armor_tiktok_A",
+                "without_helmet": "armor_tiktok_B"
+            },
+            {
+                "name": "Dark Lord Set+",
+                "with_helmet": "armor_cloth_special_f1b",
+                "without_helmet": "armor_cloth_special_f2"
+            },
+            {
+                "name": "Death Stalker",
+                "with_helmet": "armor_dark_cloth_a",
+                "without_helmet": "armor_dark_cloth_b"
+            },
+            {
+                "name": "Deathdoctor Set",
+                "with_helmet": "armor_special_e1",
+                "without_helmet": "armor_special_e2"
+            },
+            {
+                "name": "Desert Rogue Suit",
+                "with_helmet": "armor_plate_Na",
+                "without_helmet": "armor_plate_Nb"
+            },
+            {
+                "name": "Destroyer of the Corrupted",
+                "with_helmet": "armor_light_plate_a",
+                "without_helmet": "armor_light_plate_b"
+            },
+            {
+                "name": "Easter Bunny Terminator Armor",
+                "with_helmet": "armor_easter_2022_A",
+                "without_helmet": "armor_easter_2022_B"
+            },
+            {
+                "name": "Enchanted Nutcracker",
+                "with_helmet": "xmas_armor_red",
+                "without_helmet": "xmas_enemy_red"
+            },
+            {
+                "name": "Firestorm Armor",
+                "with_helmet": "armor_leather_2a",
+                "without_helmet": "armor_leather_2b"
+            },
+            {
+                "name": "Firestorm Armor+",
+                "with_helmet": "armor_leather_2a",
+                "without_helmet": "armor_leather_2b"
+            },
+            {
+                "name": "Forest Witch Dress",
+                "with_helmet": "armor_earthp_Fa",
+                "without_helmet": "armor_earthp_Fb"
+            },
+            {
+                "name": "Gayan Set",
+                "with_helmet": "armor_special_j1",
+                "without_helmet": "armor_special_j2"
+            },
+            {
+                "name": "Green Witch Dress",
+                "with_helmet": "armor_earth_Fa",
+                "without_helmet": "armor_earth_Fb"
+            },
+            {
+                "name": "Greenfang Ensemble",
+                "with_helmet": "armor_gigaspider_A",
+                "without_helmet": "armor_gigaspider_B"
+            },
+            {
+                "name": "Interrogator",
+                "with_helmet": "armor_water_plate_a",
+                "without_helmet": "armor_water_plate_b"
+            },
+            {
+                "name": "Iron Widow",
+                "with_helmet": "armor_Neutralpp_Fa",
+                "without_helmet": "armor_Neutralpp_Fb"
+            },
+            {
+                "name": "Jungle Master",
+                "with_helmet": "armor_jungle_a",
+                "without_helmet": "armor_jungle_b"
+            },
+            {
+                "name": "Kings Spectre Tunic",
+                "with_helmet": "armor_king",
+                "without_helmet": "armor_king_b"
+            },
+            {
+                "name": "Light Champion Set",
+                "with_helmet": "armor_special_i",
+                "without_helmet": "armor_special_ib"
+            },
+            {
+                "name": "Penumbra Suit",
+                "with_helmet": "armor_cloth_special_c1",
+                "without_helmet": "armor_cloth_special_c2"
+            },
+            {
+                "name": "Penumbra Suit+",
+                "with_helmet": "armor_cloth_special_c1",
+                "without_helmet": "armor_cloth_special_c2"
+            },
+            {
+                "name": "Plague Fighter Suit",
+                "with_helmet": "armor_cloth_1a",
+                "without_helmet": "armor_leather_1a"
+            },
+            {
+                "name": "Protector of the Oracle",
+                "with_helmet": "armor_earth_plate_a",
+                "without_helmet": "armor_earth_plate_b"
+            },
+            {
+                "name": "Purple Witch Dress",
+                "with_helmet": "armor_dark_Fa",
+                "without_helmet": "armor_dark_Fb"
+            },
+            {
+                "name": "Robe of Eternal Fire",
+                "with_helmet": "armor_fire_leather_a",
+                "without_helmet": "armor_fire_leather_b"
+            },
+            {
+                "name": "Robe of Imminent Fires",
+                "with_helmet": "armor_fire_cloth_a",
+                "without_helmet": "armor_fire_cloth_b"
+            },
+            {
+                "name": "Santa Claus",
+                "with_helmet": "armor_christmas_2022_A",
+                "without_helmet": "armor_christmas_2022_B"
+            },
+            {
+                "name": "Scarlet Shadowweaver Garb",
+                "with_helmet": "armor_bruxa_carmesim_A",
+                "without_helmet": "armor_bruxa_carmesim_B"
+            },
+            {
+                "name": "Special Anti-hero Set",
+                "with_helmet": "armor_special_a1",
+                "without_helmet": "armor_special_h2"
+            },
+            {
+                "name": "Steelblow Armor",
+                "with_helmet": "armor_plate_3a",
+                "without_helmet": "armor_plate_3b"
+            },
+            {
+                "name": "Steelblow Armor+",
+                "with_helmet": "armor_plate_3a",
+                "without_helmet": "armor_plate_3b"
+            },
+            {
+                "name": "Storm",
+                "with_helmet": "armor_wind_cloth_a",
+                "without_helmet": "armor_wind_cloth_b"
+            },
+            {
+                "name": "Swamp Ranger Suit",
+                "with_helmet": "armor_leather_Na",
+                "without_helmet": "armor_leather_Nb"
+            },
+            {
+                "name": "Swamp Witch Dress",
+                "with_helmet": "armor_Neutralp_Fa",
+                "without_helmet": "armor_Neutralp_Fb"
+            },
+            {
+                "name": "Time Patroller",
+                "with_helmet": "armor_cloth_special_e1",
+                "without_helmet": "armor_cloth_special_e1B"
+            },
+            {
+                "name": "Tunic of Distant Ancestors",
+                "with_helmet": "armor_earth_leather_a",
+                "without_helmet": "armor_earth_leather_b"
+            },
+            {
+                "name": "Tunic of Endless Justice",
+                "with_helmet": "armor_light_leather_a",
+                "without_helmet": "armor_light_leather_b"
+            },
+            {
+                "name": "Tunic of Frozen Voices",
+                "with_helmet": "armor_water_cloth_a",
+                "without_helmet": "armor_water_cloth_b"
+            },
+            {
+                "name": "Tunic of Hellish Illusions",
+                "with_helmet": "armor_carnival_acrobat_I_A",
+                "without_helmet": "armor_carnival_acrobat_I_B"
+            },
+            {
+                "name": "Tunic of Ominous Comrades; Jester",
+                "with_helmet": "armor_carnival_buffoon_II_A",
+                "without_helmet": "armor_carnival_buffoon_II_B"
+            },
+            {
+                "name": "Tunic of Twisted Illusions",
+                "with_helmet": "armor_carnival_acrobat_II_A",
+                "without_helmet": "armor_carnival_acrobat_II_B"
+            },
+            {
+                "name": "Tunic of the Relentless",
+                "with_helmet": "armor_water_leather_a",
+                "without_helmet": "armor_water_leather_b"
+            },
+            {
+                "name": "Unholy Storm",
+                "with_helmet": "armor_water_cloth_a",
+                "without_helmet": "armor_water_cloth_b"
+            },
+            {
+                "name": "Vanquisher",
+                "with_helmet": "armor_wind_plate_a",
+                "without_helmet": "armor_wind_plate_b"
+            },
+            {
+                "name": "Vest of Blessed Glory",
+                "with_helmet": "armor_light_cloth_a",
+                "without_helmet": "armor_light_cloth_b"
+            },
+            {
+                "name": "Vest of Ominous Comrades",
+                "with_helmet": "armor_carnival_buffoon_I_A",
+                "without_helmet": "armor_carnival_buffoon_I_B"
+            },
+            {
+                "name": "Vest of Phantoms Keeper",
+                "with_helmet": "armor_halloween_2021_A",
+                "without_helmet": "armor_halloween_2021_B"
+            },
+            {
+                "name": "Vest of Twisted Illusions",
+                "with_helmet": "armor_dark_leather_a",
+                "without_helmet": "armor_dark_leather_b"
+            },
+            {
+                "name": "Warden of Demons",
+                "with_helmet": "armor_dark_plate_a",
+                "without_helmet": "armor_dark_plate_b"
+            },
+            {
+                "name": "Wind Witch Dress",
+                "with_helmet": "armor_wind_leather_a",
+                "without_helmet": "armor_wind_leather_b"
+            },
+            {
+                "name": "Witch Dress",
+                "with_helmet": "armor_halloween_A",
+                "without_helmet": "armor_halloween_B"
+            }
         ],
         "single": [
             "armor_cloth_0a",
