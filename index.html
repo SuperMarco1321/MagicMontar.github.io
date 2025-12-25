@@ -553,26 +553,24 @@
             }
         }
 
-        // FUNÇÃO CORRIGIDA - elimina a aura/halo na coloração
         function tintImage(img, color) {
-            if (color.r === 255 && color.g === 255 && color.b === 255) {
-                return img; // cor branca = sem tint
-            }
-
             const canvas = document.createElement("canvas");
             canvas.width = img.width;
             canvas.height = img.height;
             const ctx = canvas.getContext("2d");
-
             ctx.drawImage(img, 0, 0);
-
-            ctx.globalCompositeOperation = "multiply";
-            ctx.fillStyle = `rgb(${color.r},${color.g},${color.b})`;
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-            ctx.globalCompositeOperation = "destination-in";
-            ctx.drawImage(img, 0, 0);
-
+            const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+            const data = imageData.data;
+            const r = color.r / 255;
+            const g = color.g / 255;
+            const b = color.b / 255;
+            for (let i = 0; i < data.length; i += 4) {
+                data[i] = Math.round(data[i] * r);
+                data[i + 1] = Math.round(data[i + 1] * g);
+                data[i + 2] = Math.round(data[i + 2] * b);
+                // alpha remains unchanged
+            }
+            ctx.putImageData(imageData, 0, 0);
             return canvas;
         }
 
