@@ -565,10 +565,11 @@
             const g = color.g / 255;
             const b = color.b / 255;
             for (let i = 0; i < data.length; i += 4) {
-                data[i] = Math.round(data[i] * r);
-                data[i + 1] = Math.round(data[i + 1] * g);
-                data[i + 2] = Math.round(data[i + 2] * b);
-                // alpha remains unchanged
+                if (data[i + 3] > 0) {  // Só aplica onde tem pixel (preserva transparência)
+                    data[i] = Math.round(data[i] * r);
+                    data[i + 1] = Math.round(data[i + 1] * g);
+                    data[i + 2] = Math.round(data[i + 2] * b);
+                }
             }
             ctx.putImageData(imageData, 0, 0);
             return canvas;
@@ -589,7 +590,9 @@
             canvas.width = Math.ceil(img.width * cos + img.height * sin);
             canvas.height = Math.ceil(img.width * sin + img.height * cos);
             const ctx = canvas.getContext("2d");
-            ctx.imageSmoothingEnabled = false;
+            // Deixa suavizado só para rotação (qualidade alta na arma!)
+            ctx.imageSmoothingEnabled = true;
+            ctx.imageSmoothingQuality = "high";
             ctx.translate(canvas.width / 2, canvas.height / 2);
             ctx.rotate(rad);
             ctx.drawImage(img, -img.width / 2, -img.height / 2);
@@ -609,7 +612,6 @@
             const bodyCrop = cropImage(bodyImg, bodySprite.x, bodySprite.y, bodySprite.w, bodySprite.h);
             const bodyPos = calcularPosicao(pivotX, pivotY, bodySprite);
 
-            // Tint da cabeça
             let headImg = data.head ? data.head.img : null;
             if (headImg && (headColor.r !== 255 || headColor.g !== 255 || headColor.b !== 255)) {
                 headImg = tintImage(headImg, headColor);
@@ -661,6 +663,7 @@
             canvas.width = Math.ceil(maxX - minX) || 1;
             canvas.height = Math.ceil(maxY - minY) || 1;
             const ctx = canvas.getContext("2d");
+            // Aqui sim: desliga o smoothing para manter pixel art nítido no resultado final
             ctx.imageSmoothingEnabled = false;
 
             const order = ['weapon', 'body', 'armor', 'amuleto', 'pet', 'head'];
