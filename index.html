@@ -56,30 +56,7 @@
         }
         .accordion-button:hover { background: #333; }
 
-        .sub-accordion-button {
-            width: 100%;
-            background: #333;
-            color: #ddd;
-            padding: 10px 12px;
-            text-align: left;
-            border: none;
-            font-size: 16px;
-            cursor: pointer;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-top: 1px solid #444;
-        }
-        .sub-accordion-button::after {
-            content: '▼';
-            font-size: 12px;
-        }
-        .sub-accordion-button.active::after {
-            content: '▲';
-        }
-        .sub-accordion-button:hover { background: #444; }
-
-        .panel, .sub-panel {
+        .panel {
             padding: 0 15px;
             max-height: 0;
             overflow: hidden;
@@ -200,13 +177,17 @@
         <div class="panel"><div class="catalog" id="petCatalog"></div></div>
 
         <button class="accordion-button">Cabeça</button>
-        <div class="panel">
+        <div class="panel" id="headPanel">
             <h3 style="margin: 10px 0; color: #ddd;">Normais</h3>
             <div class="catalog" id="headNormalCatalog"></div>
             
             <h3 style="margin: 10px 0; color: #ddd;">Skins por Classe</h3>
-            <div id="skinClassesContainer">
-                <!-- Botões de classes serão gerados aqui -->
+            <div class="catalog" id="skinClassesCatalog"></div>
+            
+            <div id="skinVariationsContainer" style="display: none;">
+                <button id="backToClasses" style="margin-bottom: 10px; background: #444; color: #fff;">Voltar para Classes</button>
+                <h3 id="selectedClassTitle" style="margin: 10px 0; color: #ddd;"></h3>
+                <div class="catalog" id="skinVariationsCatalog"></div>
             </div>
         </div>
 
@@ -246,10 +227,12 @@
         let bodyColor = {r: 255, g: 255, b: 255};
         let eyeColor = {r: 255, g: 255, b: 255};
         let withHelmet = true;
+        let selectedSkinClass = null;
 
         const helmetToggle = document.getElementById('helmetToggle');
         const bodyColorInput = document.getElementById('bodyColor');
         const eyeColorInput = document.getElementById('eyeColor');
+        const backToClasses = document.getElementById('backToClasses');
 
         // Atualização automática das cores
         bodyColorInput.addEventListener('input', () => {
@@ -269,7 +252,20 @@
             if (selected.armor) loadArmor(selected.armor);
         };
 
-        function createCatalog(catId, list, folder, isWeapon = false) {
+        backToClasses.onclick = () => {
+            selectedSkinClass = null;
+            document.getElementById('skinVariationsContainer').style.display = 'none';
+            document.getElementById('skinClassesCatalog').style.display = 'grid';
+            document.getElementById('headNormalCatalog').style.display = 'grid';
+            // Limpa seleção de skin se estiver selecionada
+            const variationsCat = document.getElementById('skinVariationsCatalog');
+            variationsCat.querySelectorAll('.selected').forEach(el => el.classList.remove('selected'));
+            delete selected.head;
+            delete data.head;
+            updatePreview();
+        };
+
+        function createCatalog(catId, list, folder, isWeapon = false, isSkinClass = false, isSkinVariation = false) {
             const cat = document.getElementById(catId);
             cat.innerHTML = '';
             list.forEach(entry => {
@@ -278,19 +274,44 @@
                 div.onclick = () => {
                     const currentlySelected = cat.querySelector('.selected');
                     if (currentlySelected === div) {
-                        currentlySelected.classList.remove('selected');
-                        if (catId === 'armorCatalog') {
+                        // Deseleciona
+                        div.classList.remove('selected');
+                        if (isSkinClass) {
+                            selectedSkinClass = null;
+                            document.getElementById('skinVariationsContainer').style.display = 'none';
+                            document.getElementById('skinClassesCatalog').style.display = 'grid';
+                            document.getElementById('headNormalCatalog').style.display = 'grid';
+                            delete selected.head;
+                            delete data.head;
+                        } else if (isSkinVariation) {
+                            delete selected.head;
+                            delete data.head;
+                        } else if (catId === 'armorCatalog') {
                             delete selected.armor;
                             delete data.armor;
+                            helmetToggle.classList.add('disabled');
                         } else {
-                            const key = catId.replace('Catalog', '');
+                            const key = catId.replace('Catalog', '').replace('Normal', '').replace('Classes', '').replace('Variations', '');
                             delete selected[key];
                             delete data[key];
                         }
                     } else {
                         if (currentlySelected) currentlySelected.classList.remove('selected');
                         div.classList.add('selected');
-                        if (catId === 'armorCatalog') {
+                        if (isSkinClass) {
+                            selectedSkinClass = entry;
+                            document.getElementById('selectedClassTitle').innerText = entry.class + ' Skins';
+                            document.getElementById('skinVariationsContainer').style.display = 'block';
+                            document.getElementById('skinClassesCatalog').style.display = 'none';
+                            document.getElementById('headNormalCatalog').style.display = 'none';
+                            createCatalog('skinVariationsCatalog', entry.variations.map(v => ({name: v, class_folder: entry.folder})), folders.head, false, false, true);
+                        } else if (isSkinVariation) {
+                            selected.head = {type: 'skin', name: entry.name, class_folder: entry.class_folder};
+                            loadHeadAsset(entry.name, entry.class_folder);
+                        } else if (catId === 'headNormalCatalog') {
+                            selected.head = {type: 'normal', name: entry.name};
+                            loadHeadAsset(entry.name);
+                        } else if (catId === 'armorCatalog') {
                             selected.armor = entry;
                             loadArmor(entry);
                         } else {
@@ -302,7 +323,11 @@
                     updatePreview();
                 };
                 const img = document.createElement('img');
-                if (catId === 'armorCatalog' && entry.type === 'folder') {
+                if (isSkinClass) {
+                    img.src = basePath + `${folders.head}/Png/Skins/${entry.folder}/${entry.preview_png}.png`;
+                } else if (isSkinVariation) {
+                    img.src = basePath + `${folders.head}/Png/Skins/${entry.class_folder}/${entry.name}.png`;
+                } else if (catId === 'armorCatalog' && entry.type === 'folder') {
                     img.src = basePath + `${folders.armor}/Png/${entry.name}/${entry.with_helmet}.png`;
                 } else {
                     img.src = basePath + `${folder}/Png/${entry.name}.png`;
@@ -310,10 +335,42 @@
                 img.onerror = () => img.src = 'https://placehold.it/100x100?text=Erro';
                 div.appendChild(img);
                 const span = document.createElement('span');
-                span.innerText = (entry.display || entry.name).replace(/_/g, ' ');
+                span.innerText = (entry.display || entry.class || entry.name).replace(/_/g, ' ');
                 div.appendChild(span);
                 cat.appendChild(div);
             });
+        }
+
+        function loadHeadAsset(name, class_folder = null) {
+            data.head = {img: new Image(), sprites: []};
+            let pngUrl = class_folder ? `${folders.head}/Png/Skins/${class_folder}/${name}.png` : `${folders.head}/Png/${name}.png`;
+            data.head.img.src = basePath + pngUrl;
+            data.head.img.onload = () => updatePreview();
+            fetch(basePath + `${folders.head}/Xml/${name}.xml`)
+                .then(res => res.text())
+                .then(xml => {
+                    const parser = new DOMParser();
+                    const doc = parser.parseFromString(xml, "text/xml");
+                    data.head.sprites = Array.from(doc.getElementsByTagName('sprite')).map(s => ({
+                        name: s.getAttribute('n'),
+                        x: parseInt(s.getAttribute('x')),
+                        y: parseInt(s.getAttribute('y')),
+                        w: parseInt(s.getAttribute('w')),
+                        h: parseInt(s.getAttribute('h')),
+                        oX: parseInt(s.getAttribute('oX') || 0),
+                        oY: parseInt(s.getAttribute('oY') || 0),
+                        oW: parseInt(s.getAttribute('oW') || 0),
+                        oH: parseInt(s.getAttribute('oH') || 0),
+                        pX: parseFloat(s.getAttribute('pX') || 0.5),
+                        pY: parseFloat(s.getAttribute('pY') || 0.5)
+                    }));
+                    updatePreview();
+                })
+                .catch(e => {
+                    console.error('Erro XML head:', e);
+                    delete data.head;
+                    updatePreview();
+                });
         }
 
         async function loadArmor(entry) {
@@ -325,7 +382,7 @@
                 pngUrl = `${folders.armor}/Png/${baseName}.png`;
                 xmlUrl = `${folders.armor}/Xml/${baseName}.xml`;
                 helmetToggle.classList.add('disabled');
-            } else { // folder
+            } else {
                 baseName = withHelmet ? entry.with_helmet : entry.without_helmet;
                 pngUrl = `${folders.armor}/Png/${entry.name}/${baseName}.png`;
                 xmlUrl = `${folders.armor}/Xml/${baseName}.xml`;
@@ -362,8 +419,10 @@
                     updatePreview();
                 })
                 .catch(e => {
-                    console.error('Erro ao carregar XML de armadura:', e);
+                    console.error('Erro ao carregar XML:', e);
                     document.getElementById('status').innerText = 'Erro ao carregar XML de armadura.';
+                    delete data.armor;
+                    updatePreview();
                 });
         }
 
@@ -392,11 +451,15 @@
                         }));
                         updatePreview();
                     })
-                    .catch(e => console.error('Erro XML:', e));
+                    .catch(e => {
+                        console.error('Erro XML:', e);
+                        delete data[key];
+                        updatePreview();
+                    });
             } else {
-                // Para armas
                 data[key].angle = 0;
                 data[key].offset = [0, 0];
+                updatePreview();
             }
         }
 
@@ -512,9 +575,7 @@
             return canvas;
         }
 
-        async function updatePreview() {
-            bodyColor = hexToRgb(document.getElementById('bodyColor').value);
-            eyeColor = hexToRgb(document.getElementById('eyeColor').value);
+        function updatePreview() {
             const canvas = montarFrame(0);
             if (canvas) {
                 const prev = document.getElementById('preview');
@@ -559,10 +620,22 @@
                 catalog = await res.json();
 
                 const armorList = [];
-
-                catalog.armor.folders.forEach(folder => armorList.push({name: folder.name, type: 'folder', display: folder.name, with_helmet: folder.with_helmet, without_helmet: folder.without_helmet}));
-                catalog.armor.single.forEach(name => armorList.push({name, type: 'single', display: name.replace(/_/g, ' ')}));
-
+                catalog.armor.folders.forEach(folder => {
+                    armorList.push({
+                        name: folder.name,
+                        type: 'folder',
+                        display: folder.name,
+                        with_helmet: folder.with_helmet,
+                        without_helmet: folder.without_helmet
+                    });
+                });
+                catalog.armor.single.forEach(name => {
+                    armorList.push({
+                        name: name,
+                        type: 'single',
+                        display: name.replace(/_/g, ' ')
+                    });
+                });
                 armorList.sort((a,b) => a.display.localeCompare(b.display));
 
                 createCatalog('bodyCatalog', catalog.body.map(n=>({name:n})), folders.body);
@@ -570,7 +643,15 @@
                 createCatalog('amuletoCatalog', catalog.amuleto.map(n=>({name:n})), folders.amuleto);
                 createCatalog('petCatalog', catalog.pet.map(n=>({name:n})), folders.pet);
                 createCatalog('headNormalCatalog', catalog.head.normal.map(n=>({name:n})), folders.head);
-                createSkinClasses(catalog.head.skins);
+                // Para skins classes
+                const skinClassesList = catalog.head.skins.map(s => ({
+                    class: s.class,
+                    folder: s.folder,
+                    preview_png: s.preview_png,
+                    variations: s.variations,
+                    display: s.class
+                }));
+                createCatalog('skinClassesCatalog', skinClassesList, folders.head, false, true);
                 createCatalog('eyeCatalog', catalog.eye.map(n=>({name:n})), folders.eye);
                 createCatalog('weaponCatalog', catalog.weapon.map(n=>({name:n})), folders.weapon, true);
 
@@ -581,36 +662,7 @@
             }
         }
 
-        function createSkinClasses(skins) {
-            const container = document.getElementById('skinClassesContainer');
-            container.innerHTML = '';
-            skins.forEach(skinClass => {
-                const button = document.createElement('button');
-                button.className = 'sub-accordion-button';
-                button.innerText = skinClass.class;
-                button.onclick = () => {
-                    button.classList.toggle('active');
-                    const subPanel = button.nextElementSibling;
-                    if (subPanel.style.maxHeight) {
-                        subPanel.style.maxHeight = null;
-                    } else {
-                        subPanel.style.maxHeight = subPanel.scrollHeight + "px";
-                    }
-                };
-                container.appendChild(button);
-
-                const subPanel = document.createElement('div');
-                subPanel.className = 'sub-panel';
-                const catalogDiv = document.createElement('div');
-                catalogDiv.className = 'catalog';
-                subPanel.appendChild(catalogDiv);
-                container.appendChild(subPanel);
-
-                createCatalog(catalogDiv.id = `skinCatalog_${skinClass.folder}`, skinClass.variations.map(v => ({name: v})), folders.head + '/Skins/' + skinClass.folder);
-            });
-        }
-
-        // Acordeão
+        // Acordeão principal
         const accButtons = document.querySelectorAll(".accordion-button");
         accButtons.forEach(button => {
             button.addEventListener("click", function () {
