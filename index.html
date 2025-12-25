@@ -156,14 +156,15 @@
 </head>
 <body>
     <div id="sidebar">
-    <h1>Montador Magic Rampage</h1>
-    <p style="text-align:center; margin-bottom:10px;">Fornecido por Super Marco</p>
-    <p style="text-align:center; margin-bottom:30px; font-size: 0.9em; color: #aaa;">
-        © Nenhum direito reservado
-    </p>
+        <h1>Montador Magic Rampage</h1>
+        <p style="text-align:center; margin-bottom:10px;">Fornecido por Super Marco</p>
+        <p style="text-align:center; margin-bottom:30px; font-size: 0.9em; color: #aaa;">
+            © Nenhum direito reservado
+        </p>
 
-    <div class="colors">
+        <div class="colors">
             <label>Cor do corpo: <input type="color" id="bodyColor" value="#ffffff"></label><br><br>
+            <label>Cor da cabeça: <input type="color" id="headColor" value="#ffffff"></label><br><br>
             <label>Cor dos olhos: <input type="color" id="eyeColor" value="#ffffff"></label>
         </div>
 
@@ -242,6 +243,7 @@
         let selected = {};
         let data = {};
         let bodyColor = {r: 255, g: 255, b: 255};
+        let headColor = {r: 255, g: 255, b: 255};
         let eyeColor = {r: 255, g: 255, b: 255};
         let withHelmet = true;
         let selectedSkinClass = null;
@@ -250,12 +252,18 @@
 
         const helmetToggle = document.getElementById('helmetToggle');
         const bodyColorInput = document.getElementById('bodyColor');
+        const headColorInput = document.getElementById('headColor');
         const eyeColorInput = document.getElementById('eyeColor');
         const backToHeadClasses = document.getElementById('backToHeadClasses');
         const backToWeaponCategories = document.getElementById('backToWeaponCategories');
 
         bodyColorInput.addEventListener('input', () => {
             bodyColor = hexToRgb(bodyColorInput.value);
+            updatePreview();
+        });
+
+        headColorInput.addEventListener('input', () => {
+            headColor = hexToRgb(headColorInput.value);
             updatePreview();
         });
 
@@ -454,7 +462,7 @@
             data.weapon.img.onload = () => updatePreview();
 
             const config = weaponConfigs[name] || {angle: 0, offset: [0, 0]};
-            data.weapon.angle = -config.angle;  // <--- CORREÇÃO: inverte o sinal para combinar com o Python
+            data.weapon.angle = -config.angle;
             data.weapon.offset = config.offset;
 
             updatePreview();
@@ -594,12 +602,22 @@
             const bodyCrop = cropImage(bodyImg, bodySprite.x, bodySprite.y, bodySprite.w, bodySprite.h);
             const bodyPos = calcularPosicao(pivotX, pivotY, bodySprite);
 
+            // Tint da cabeça
+            let headImg = data.head ? data.head.img : null;
+            if (headImg && (headColor.r !== 255 || headColor.g !== 255 || headColor.b !== 255)) {
+                headImg = tintImage(headImg, headColor);
+            }
+
             const crops = [{ img: bodyCrop, pos: bodyPos, key: 'body' }];
 
             ['armor', 'amuleto', 'pet', 'head'].forEach(key => {
                 if (data[key] && data[key].sprites && data[key].sprites.length > 0) {
                     const s = data[key].sprites[Math.min(frameIndex, data[key].sprites.length - 1)];
-                    const crop = cropImage(data[key].img, s.x, s.y, s.w, s.h);
+                    let imgToUse = data[key].img;
+                    if (key === 'head' && headImg) {
+                        imgToUse = headImg;
+                    }
+                    const crop = cropImage(imgToUse, s.x, s.y, s.w, s.h);
                     const pos = calcularPosicao(pivotX, pivotY, s);
                     crops.push({ img: crop, pos, key });
                 }
