@@ -414,7 +414,7 @@
         "skins": [
             {
                 "class": "Npcs",
-                "folder": "NPCs",
+                "folder": "Png",
                 "preview_png": "character_rat_head_0",
                 "variations": [
                     "character_rat_head_0",
