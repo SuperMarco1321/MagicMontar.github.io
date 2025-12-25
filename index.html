@@ -451,7 +451,7 @@
             data.weapon.img.onload = () => updatePreview();
 
             const config = weaponConfigs[name] || {angle: 0, offset: [0, 0]};
-            data.weapon.angle = config.angle;
+            data.weapon.angle = -config.angle;  // <--- CORREÇÃO: inverte o sinal para combinar com o Python
             data.weapon.offset = config.offset;
 
             updatePreview();
