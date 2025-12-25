@@ -157,7 +157,7 @@
 <body>
     <div id="sidebar">
         <h1>Montador Magic Rampage</h1>
-        <p style="text-align:center; margin-bottom:20px;">Fornecido por Super Marco</p>
+        <p style="text-align:center; margin-bottom:20px;">By Marco</p>
 
         <div class="colors">
             <label>Cor do corpo: <input type="color" id="bodyColor" value="#ffffff"></label><br><br>
@@ -451,7 +451,7 @@
             data.weapon.img.onload = () => updatePreview();
 
             const config = weaponConfigs[name] || {angle: 0, offset: [0, 0]};
-            data.weapon.angle = -config.angle;  // Inverte para combinar com Python
+            data.weapon.angle = -config.angle;  // <--- CORREÇÃO: inverte o sinal para combinar com o Python
             data.weapon.offset = config.offset;
 
             updatePreview();
@@ -475,19 +475,13 @@
                 }
             }
 
-            // Limpa imediatamente para evitar sobreposição
             data.armor = {img: new Image(), sprites: []};
             data.armor.img.src = basePath + pngUrl;
+            data.armor.img.onload = () => updatePreview();
 
-            // Carrega PNG e XML em paralelo
-            const imgLoad = new Promise(resolve => {
-                data.armor.img.onload = resolve;
-                data.armor.img.onerror = () => resolve(); // continua mesmo se erro
-            });
-
-            const xmlLoad = fetch(basePath + xmlUrl)
+            fetch(basePath + xmlUrl)
                 .then(res => {
-                    if (!res.ok) throw new Error();
+                    if (!res.ok) throw new Error('XML não encontrado');
                     return res.text();
                 })
                 .then(xml => {
@@ -506,15 +500,13 @@
                         pX: parseFloat(s.getAttribute('pX') || 0.5),
                         pY: parseFloat(s.getAttribute('pY') || 0.5)
                     }));
+                    updatePreview();
                 })
                 .catch(e => {
-                    console.error('Erro XML armadura:', e);
-                    data.armor.sprites = [];
+                    console.error('Erro ao carregar XML:', e);
+                    delete data.armor;
+                    updatePreview();
                 });
-
-            // Atualiza preview só quando ambos estiverem prontos
-            await Promise.all([imgLoad, xmlLoad]);
-            updatePreview();
         }
 
         function loadAsset(key, name, folder, isWeapon = false) {
@@ -641,7 +633,7 @@
             canvas.width = Math.ceil(maxX - minX) || 1;
             canvas.height = Math.ceil(maxY - minY) || 1;
             const ctx = canvas.getContext("2d");
-            ctx.imageSmoothingEnabled = false; // Qualidade máxima no ZIP
+            ctx.imageSmoothingEnabled = false;
 
             const order = ['weapon', 'body', 'armor', 'amuleto', 'pet', 'head'];
             order.forEach(k => {
@@ -660,10 +652,8 @@
 
         function cropImage(img, x, y, w, h) {
             const canvas = document.createElement("canvas");
-            canvas.width = w;
-            canvas.height = h;
+            canvas.width = w; canvas.height = h;
             const ctx = canvas.getContext("2d");
-            ctx.imageSmoothingEnabled = false;
             ctx.drawImage(img, x, y, w, h, 0, 0, w, h);
             return canvas;
         }
@@ -674,10 +664,7 @@
                 const prev = document.getElementById('preview');
                 prev.width = canvas.width;
                 prev.height = canvas.height;
-                const ctx = prev.getContext("2d");
-                ctx.imageSmoothingEnabled = false;
-                ctx.clearRect(0, 0, prev.width, prev.height);
-                ctx.drawImage(canvas, 0, 0);
+                prev.getContext("2d").drawImage(canvas, 0, 0);
                 document.getElementById('status').innerText = 'Preview atualizado!';
             } else {
                 document.getElementById('status').innerText = 'Selecione um corpo primeiro.';
@@ -691,12 +678,11 @@
             }
             const zip = new JSZip();
             const total = data.body.sprites.length;
-            document.getElementById('status').innerText = 'Gerando ZIP... 0%';
+            document.getElementById('status').innerText = 'Gerando ZIP...';
             for (let i = 0; i < total; i++) {
                 const canvas = montarFrame(i);
                 const blob = await new Promise(r => canvas.toBlob(r));
                 zip.file(`${data.body.sprites[i].name.replace(/[\\/]/g, '_')}.png`, blob);
-                document.getElementById('status').innerText = `Gerando ZIP... ${Math.round((i+1)/total*100)}%`;
             }
             const content = await zip.generateAsync({type: 'blob'});
             saveAs(content, 'Personagem_MagicRampage.zip');
