@@ -185,8 +185,8 @@
             <div class="catalog" id="skinClassesCatalog"></div>
             
             <div id="skinVariationsContainer" style="display: none;">
-                <button id="backToClasses" style="margin-bottom: 10px; background: #444; color: #fff;">Voltar para Classes</button>
-                <h3 id="selectedClassTitle" style="margin: 10px 0; color: #ddd;"></h3>
+                <button id="backToHeadClasses" style="margin-bottom: 10px; background: #444; color: #fff;">Voltar para Classes</button>
+                <h3 id="selectedHeadClassTitle" style="margin: 10px 0; color: #ddd;"></h3>
                 <div class="catalog" id="skinVariationsCatalog"></div>
             </div>
         </div>
@@ -195,7 +195,19 @@
         <div class="panel"><div class="catalog" id="eyeCatalog"></div></div>
 
         <button class="accordion-button">Arma</button>
-        <div class="panel"><div class="catalog" id="weaponCatalog"></div></div>
+        <div class="panel" id="weaponPanel">
+            <h3 style="margin: 10px 0; color: #ddd;">Normais</h3>
+            <div class="catalog" id="weaponNormalCatalog"></div>
+            
+            <h3 style="margin: 10px 0; color: #ddd;">Por Categoria</h3>
+            <div class="catalog" id="weaponCategoriesCatalog"></div>
+            
+            <div id="weaponVariationsContainer" style="display: none;">
+                <button id="backToWeaponCategories" style="margin-bottom: 10px; background: #444; color: #fff;">Voltar para Categorias</button>
+                <h3 id="selectedWeaponCategoryTitle" style="margin: 10px 0; color: #ddd;"></h3>
+                <div class="catalog" id="weaponVariationsCatalog"></div>
+            </div>
+        </div>
     </div>
 
     <div id="main">
@@ -228,11 +240,13 @@
         let eyeColor = {r: 255, g: 255, b: 255};
         let withHelmet = true;
         let selectedSkinClass = null;
+        let selectedWeaponCategory = null;
 
         const helmetToggle = document.getElementById('helmetToggle');
         const bodyColorInput = document.getElementById('bodyColor');
         const eyeColorInput = document.getElementById('eyeColor');
-        const backToClasses = document.getElementById('backToClasses');
+        const backToHeadClasses = document.getElementById('backToHeadClasses');
+        const backToWeaponCategories = document.getElementById('backToWeaponCategories');
 
         // Atualização automática das cores
         bodyColorInput.addEventListener('input', () => {
@@ -252,20 +266,27 @@
             if (selected.armor) loadArmor(selected.armor);
         };
 
-        backToClasses.onclick = () => {
+        backToHeadClasses.onclick = () => {
             selectedSkinClass = null;
             document.getElementById('skinVariationsContainer').style.display = 'none';
             document.getElementById('skinClassesCatalog').style.display = 'grid';
             document.getElementById('headNormalCatalog').style.display = 'grid';
-            // Limpa seleção de skin se estiver selecionada
-            const variationsCat = document.getElementById('skinVariationsCatalog');
-            variationsCat.querySelectorAll('.selected').forEach(el => el.classList.remove('selected'));
             delete selected.head;
             delete data.head;
             updatePreview();
         };
 
-        function createCatalog(catId, list, folder, isWeapon = false, isSkinClass = false, isSkinVariation = false) {
+        backToWeaponCategories.onclick = () => {
+            selectedWeaponCategory = null;
+            document.getElementById('weaponVariationsContainer').style.display = 'none';
+            document.getElementById('weaponCategoriesCatalog').style.display = 'grid';
+            document.getElementById('weaponNormalCatalog').style.display = 'grid';
+            delete selected.weapon;
+            delete data.weapon;
+            updatePreview();
+        };
+
+        function createCatalog(catId, list, folder, isWeapon = false, isSkinClass = false, isSkinVariation = false, isWeaponCategory = false, isWeaponVariation = false) {
             const cat = document.getElementById(catId);
             cat.innerHTML = '';
             list.forEach(entry => {
@@ -276,22 +297,30 @@
                     if (currentlySelected === div) {
                         // Deseleciona
                         div.classList.remove('selected');
-                        if (isSkinClass) {
-                            selectedSkinClass = null;
-                            document.getElementById('skinVariationsContainer').style.display = 'none';
-                            document.getElementById('skinClassesCatalog').style.display = 'grid';
-                            document.getElementById('headNormalCatalog').style.display = 'grid';
-                            delete selected.head;
-                            delete data.head;
-                        } else if (isSkinVariation) {
-                            delete selected.head;
-                            delete data.head;
+                        if (isSkinClass || isWeaponCategory) {
+                            // Volta para lista de classes/categorias
+                            if (isSkinClass) {
+                                selectedSkinClass = null;
+                                document.getElementById('skinVariationsContainer').style.display = 'none';
+                                document.getElementById('skinClassesCatalog').style.display = 'grid';
+                                document.getElementById('headNormalCatalog').style.display = 'grid';
+                            } else if (isWeaponCategory) {
+                                selectedWeaponCategory = null;
+                                document.getElementById('weaponVariationsContainer').style.display = 'none';
+                                document.getElementById('weaponCategoriesCatalog').style.display = 'grid';
+                                document.getElementById('weaponNormalCatalog').style.display = 'grid';
+                            }
+                            delete selected.head || delete selected.weapon;
+                            delete data.head || delete data.weapon;
+                        } else if (isSkinVariation || isWeaponVariation) {
+                            delete selected.head || delete selected.weapon;
+                            delete data.head || delete data.weapon;
                         } else if (catId === 'armorCatalog') {
                             delete selected.armor;
                             delete data.armor;
                             helmetToggle.classList.add('disabled');
                         } else {
-                            const key = catId.replace('Catalog', '').replace('Normal', '').replace('Classes', '').replace('Variations', '');
+                            const key = catId.replace('Catalog', '').replace('Normal', '').replace('Classes', '').replace('Variations', '').replace('Categories', '');
                             delete selected[key];
                             delete data[key];
                         }
@@ -300,7 +329,7 @@
                         div.classList.add('selected');
                         if (isSkinClass) {
                             selectedSkinClass = entry;
-                            document.getElementById('selectedClassTitle').innerText = entry.class + ' Skins';
+                            document.getElementById('selectedHeadClassTitle').innerText = entry.class + ' Skins';
                             document.getElementById('skinVariationsContainer').style.display = 'block';
                             document.getElementById('skinClassesCatalog').style.display = 'none';
                             document.getElementById('headNormalCatalog').style.display = 'none';
@@ -311,6 +340,19 @@
                         } else if (catId === 'headNormalCatalog') {
                             selected.head = {type: 'normal', name: entry.name};
                             loadHeadAsset(entry.name);
+                        } else if (isWeaponCategory) {
+                            selectedWeaponCategory = entry;
+                            document.getElementById('selectedWeaponCategoryTitle').innerText = entry.category + ' Armas';
+                            document.getElementById('weaponVariationsContainer').style.display = 'block';
+                            document.getElementById('weaponCategoriesCatalog').style.display = 'none';
+                            document.getElementById('weaponNormalCatalog').style.display = 'none';
+                            createCatalog('weaponVariationsCatalog', entry.variations.map(v => ({name: v, category_folder: entry.folder})), folders.weapon, true, false, false, false, false, true);
+                        } else if (isWeaponVariation) {
+                            selected.weapon = {type: 'category', name: entry.name, category_folder: entry.category_folder};
+                            loadWeaponAsset(entry.name);
+                        } else if (catId === 'weaponNormalCatalog') {
+                            selected.weapon = {type: 'normal', name: entry.name};
+                            loadWeaponAsset(entry.name);
                         } else if (catId === 'armorCatalog') {
                             selected.armor = entry;
                             loadArmor(entry);
@@ -327,6 +369,10 @@
                     img.src = basePath + `${folders.head}/Png/Skins/${entry.folder}/${entry.preview_png}.png`;
                 } else if (isSkinVariation) {
                     img.src = basePath + `${folders.head}/Png/Skins/${entry.class_folder}/${entry.name}.png`;
+                } else if (isWeaponCategory) {
+                    img.src = basePath + `${folders.weapon}/Png/${entry.folder}/${entry.preview_png}.png`;
+                } else if (isWeaponVariation) {
+                    img.src = basePath + `${folders.weapon}/Png/${entry.category_folder}/${entry.name}.png`;
                 } else if (catId === 'armorCatalog' && entry.type === 'folder') {
                     img.src = basePath + `${folders.armor}/Png/${entry.name}/${entry.with_helmet}.png`;
                 } else {
@@ -335,7 +381,7 @@
                 img.onerror = () => img.src = 'https://placehold.it/100x100?text=Erro';
                 div.appendChild(img);
                 const span = document.createElement('span');
-                span.innerText = (entry.display || entry.class || entry.name).replace(/_/g, ' ');
+                span.innerText = (entry.display || entry.class || entry.category || entry.name).replace(/_/g, ' ');
                 div.appendChild(span);
                 cat.appendChild(div);
             });
@@ -373,7 +419,17 @@
                 });
         }
 
+        function loadWeaponAsset(name, category_folder = null) {
+            data.weapon = {img: new Image(), angle: 0, offset: [0, 0]};
+            let pngUrl = category_folder ? `${folders.weapon}/Png/${category_folder}/${name}.png` : `${folders.weapon}/Png/${name}.png`;
+            data.weapon.img.src = basePath + pngUrl;
+            data.weapon.img.onload = () => updatePreview();
+            // Armas não têm XML, então não precisa carregar sprites
+            updatePreview();
+        }
+
         async function loadArmor(entry) {
+            // (mantido igual ao anterior)
             helmetToggle.classList.remove('disabled');
             let pngUrl, xmlUrl, baseName;
 
@@ -420,13 +476,13 @@
                 })
                 .catch(e => {
                     console.error('Erro ao carregar XML:', e);
-                    document.getElementById('status').innerText = 'Erro ao carregar XML de armadura.';
                     delete data.armor;
                     updatePreview();
                 });
         }
 
         function loadAsset(key, name, folder, isWeapon = false) {
+            // (mantido igual, usado para amuleto, pet, eye)
             data[key] = {img: new Image(), sprites: []};
             data[key].img.src = basePath + `${folder}/Png/${name}.png`;
             data[key].img.onload = () => updatePreview();
@@ -456,12 +512,10 @@
                         delete data[key];
                         updatePreview();
                     });
-            } else {
-                data[key].angle = 0;
-                data[key].offset = [0, 0];
-                updatePreview();
             }
         }
+
+        // (funções tintImage, calcularPosicao, montarFrame, cropImage, rotateImage, updatePreview, generateAll, hexToRgb permanecem inalteradas)
 
         function tintImage(img, color) {
             const canvas = document.createElement("canvas");
@@ -518,7 +572,7 @@
                 crops.push({ img: eyeCrop, pos, key: 'eye' });
             }
 
-            if (data.weapon) {
+            if (data.weapon && data.weapon.img) {
                 const weaponImg = rotateImage(data.weapon.img, data.weapon.angle || 0);
                 const pos = [pivotX + (data.weapon.offset?.[0] || 0) - weaponImg.width / 2,
                              pivotY + (data.weapon.offset?.[1] || 0) - weaponImg.height / 2];
@@ -643,7 +697,6 @@
                 createCatalog('amuletoCatalog', catalog.amuleto.map(n=>({name:n})), folders.amuleto);
                 createCatalog('petCatalog', catalog.pet.map(n=>({name:n})), folders.pet);
                 createCatalog('headNormalCatalog', catalog.head.normal.map(n=>({name:n})), folders.head);
-                // Para skins classes
                 const skinClassesList = catalog.head.skins.map(s => ({
                     class: s.class,
                     folder: s.folder,
@@ -652,8 +705,19 @@
                     display: s.class
                 }));
                 createCatalog('skinClassesCatalog', skinClassesList, folders.head, false, true);
+
+                // Armas
+                createCatalog('weaponNormalCatalog', catalog.weapon.normal.map(n=>({name:n})), folders.weapon);
+                const weaponCategoriesList = catalog.weapon.categories.map(c => ({
+                    category: c.category,
+                    folder: c.folder,
+                    preview_png: c.preview_png,
+                    variations: c.variations,
+                    display: c.category
+                }));
+                createCatalog('weaponCategoriesCatalog', weaponCategoriesList, folders.weapon, true, false, false, true);
+
                 createCatalog('eyeCatalog', catalog.eye.map(n=>({name:n})), folders.eye);
-                createCatalog('weaponCatalog', catalog.weapon.map(n=>({name:n})), folders.weapon, true);
 
                 document.getElementById('status').innerText = 'Catálogo carregado! Selecione as imagens.';
             } catch (e) {
