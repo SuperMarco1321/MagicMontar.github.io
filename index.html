@@ -93,15 +93,17 @@
         }
         .item.selected { border: 3px solid #ffcc00; }
 
-        /* Área do preview */
+        /* Área do preview - sticky */
         #main {
             flex: 1;
             display: flex;
             flex-direction: column;
             align-items: center;
-            padding: 20px;
+            padding: 20px 40px;
             position: sticky;
             top: 0;
+            height: 100vh;
+            overflow-y: auto;
             align-self: flex-start;
         }
         #previewContainer {
@@ -148,7 +150,7 @@
         @media (max-width: 900px) {
             body { flex-direction: column; }
             #sidebar { width: 100%; max-height: 60vh; }
-            #main { padding: 10px; position: static; }
+            #main { padding: 20px; position: static; height: auto; }
         }
     </style>
 </head>
@@ -249,7 +251,6 @@
         const backToHeadClasses = document.getElementById('backToHeadClasses');
         const backToWeaponCategories = document.getElementById('backToWeaponCategories');
 
-        // Atualização automática das cores
         bodyColorInput.addEventListener('input', () => {
             bodyColor = hexToRgb(bodyColorInput.value);
             updatePreview();
@@ -289,24 +290,28 @@
         async function loadWeaponConfigs() {
             try {
                 const res = await fetch(basePath + 'Arma/Angulos.txt');
-                if (!res.ok) throw new Error('Angulos.txt not found');
+                if (!res.ok) return;
                 const txt = await res.text();
                 const blocks = txt.match(/\{[\s\S]*?\}/g) || [];
                 blocks.forEach(block => {
-                    const spriteMatch = block.match(/sprite\s*=\s*([^;]+);/);
+                    const spriteMatch = block.match(/sprite\s*=\s*([^\s;]+);/);
                     if (spriteMatch) {
-                        const name = spriteMatch[1].trim();
+                        const spriteName = spriteMatch[1].trim();
+                        const name = spriteName.replace('.png', '');
                         const angleMatch = block.match(/equippedAngle\s*=\s*([-\d\.]+);/);
                         const offsetXMatch = block.match(/equipOffsetX\s*=\s*([-\d]+);/);
                         const offsetYMatch = block.match(/equipOffsetY\s*=\s*([-\d]+);/);
                         weaponConfigs[name] = {
                             angle: angleMatch ? parseFloat(angleMatch[1]) : 0,
-                            offset: [offsetXMatch ? parseInt(offsetXMatch[1]) : 0, offsetYMatch ? parseInt(offsetYMatch[1]) : 0]
+                            offset: [
+                                offsetXMatch ? parseInt(offsetXMatch[1]) : 0,
+                                offsetYMatch ? parseInt(offsetYMatch[1]) : 0
+                            ]
                         };
                     }
                 });
             } catch (e) {
-                console.error('Erro ao carregar Angulos.txt:', e);
+                console.warn('Angulos.txt não carregado:', e);
             }
         }
 
@@ -319,7 +324,6 @@
                 div.onclick = () => {
                     const currentlySelected = cat.querySelector('.selected');
                     if (currentlySelected === div) {
-                        // Deseleciona
                         div.classList.remove('selected');
                         if (isSkinClass) {
                             selectedSkinClass = null;
@@ -445,10 +449,11 @@
             let pngUrl = category_folder ? `${folders.weapon}/Png/${category_folder}/${name}.png` : `${folders.weapon}/Png/${name}.png`;
             data.weapon.img.src = basePath + pngUrl;
             data.weapon.img.onload = () => updatePreview();
-            // Carrega config de Angulos.txt
+
             const config = weaponConfigs[name] || {angle: 0, offset: [0, 0]};
             data.weapon.angle = config.angle;
             data.weapon.offset = config.offset;
+
             updatePreview();
         }
 
@@ -534,10 +539,6 @@
                         delete data[key];
                         updatePreview();
                     });
-            } else {
-                data[key].angle = 0;
-                data[key].offset = [0, 0];
-                updatePreview();
             }
         }
 
@@ -560,6 +561,21 @@
             const posX = pivotX - (sprite.pX * sprite.oW - sprite.oX);
             const posY = pivotY - (sprite.pY * sprite.oH - sprite.oY);
             return [posX, posY];
+        }
+
+        function rotateImage(img, angle) {
+            const rad = angle * Math.PI / 180;
+            const sin = Math.abs(Math.sin(rad));
+            const cos = Math.abs(Math.cos(rad));
+            const canvas = document.createElement("canvas");
+            canvas.width = Math.ceil(img.width * cos + img.height * sin);
+            canvas.height = Math.ceil(img.width * sin + img.height * cos);
+            const ctx = canvas.getContext("2d");
+            ctx.imageSmoothingEnabled = false;
+            ctx.translate(canvas.width / 2, canvas.height / 2);
+            ctx.rotate(rad);
+            ctx.drawImage(img, -img.width / 2, -img.height / 2);
+            return canvas;
         }
 
         function montarFrame(frameIndex) {
@@ -597,10 +613,12 @@
             }
 
             if (data.weapon && data.weapon.img) {
-                const weaponImg = rotateImage(data.weapon.img, data.weapon.angle || 0);
-                const pos = [pivotX + (data.weapon.offset[0] || 0) - weaponImg.width / 2,
-                             pivotY + (data.weapon.offset[1] || 0) - weaponImg.height / 2];
-                crops.push({ img: weaponImg, pos, key: 'weapon' });
+                const rotated = rotateImage(data.weapon.img, data.weapon.angle || 0);
+                const pos = [
+                    pivotX + (data.weapon.offset[0] || 0) - rotated.width / 2,
+                    pivotY + (data.weapon.offset[1] || 0) - rotated.height / 2
+                ];
+                crops.push({ img: rotated, pos, key: 'weapon' });
             }
 
             let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
@@ -615,6 +633,7 @@
             canvas.width = Math.ceil(maxX - minX) || 1;
             canvas.height = Math.ceil(maxY - minY) || 1;
             const ctx = canvas.getContext("2d");
+            ctx.imageSmoothingEnabled = false;
 
             const order = ['weapon', 'body', 'armor', 'amuleto', 'pet', 'head'];
             order.forEach(k => {
@@ -636,20 +655,6 @@
             canvas.width = w; canvas.height = h;
             const ctx = canvas.getContext("2d");
             ctx.drawImage(img, x, y, w, h, 0, 0, w, h);
-            return canvas;
-        }
-
-        function rotateImage(img, angle) {
-            const rad = angle * Math.PI / 180;
-            const sin = Math.abs(Math.sin(rad));
-            const cos = Math.abs(Math.cos(rad));
-            const canvas = document.createElement("canvas");
-            canvas.width = Math.ceil(img.width * cos + img.height * sin);
-            canvas.height = Math.ceil(img.width * sin + img.height * cos);
-            const ctx = canvas.getContext("2d");
-            ctx.translate(canvas.width / 2, canvas.height / 2);
-            ctx.rotate(rad);
-            ctx.drawImage(img, -img.width / 2, -img.height / 2);
             return canvas;
         }
 
@@ -732,7 +737,6 @@
                 createCatalog('skinClassesCatalog', skinClassesList, folders.head, false, true);
                 createCatalog('eyeCatalog', catalog.eye.map(n=>({name:n})), folders.eye);
 
-                // Armas (sem Normais, só categorias)
                 const weaponCategoriesList = catalog.weapon.categories.map(c => ({
                     category: c.category,
                     folder: c.folder,
@@ -749,7 +753,6 @@
             }
         }
 
-        // Acordeão principal
         const accButtons = document.querySelectorAll(".accordion-button");
         accButtons.forEach(button => {
             button.addEventListener("click", function () {
